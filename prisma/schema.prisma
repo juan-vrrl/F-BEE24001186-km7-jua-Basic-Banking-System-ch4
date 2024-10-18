@@ -12,18 +12,21 @@ model User {
   name         String
   email        String         @unique
   password     String
-  bank_account Bank_Account[] 
+  bank_account Bank_Account[]
 
   profile Profile?
 
-  @@map("users") 
+  @@map("users")
 }
 
 model Profile {
   id Int @id @default(autoincrement())
 
-  user_id Int  @unique
-  user    User @relation(fields: [user_id], references: [id])
+  user_id         Int    @unique
+  identity_type   String
+  identity_number String
+  address         String
+  user            User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("profiles")
 }
@@ -34,13 +37,13 @@ model Bank_Account {
   bank_account_number String
   balance             Float
 
-  send Transaction[] @relation("sentTransactions")
+  send    Transaction[] @relation("sentTransactions")
   receive Transaction[] @relation("receivedTransactions")
 
   user_id Int
-  user    User @relation(fields: [user_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@map("bank_accounts") 
+  @@map("bank_accounts")
 }
 
 model Transaction {
@@ -53,5 +56,5 @@ model Transaction {
   source_account      Bank_Account @relation("sentTransactions", fields: [source_account_id], references: [id])
   destination_account Bank_Account @relation("receivedTransactions", fields: [destination_account_id], references: [id])
 
-  @@map("transactions") 
+  @@map("transactions")
 }

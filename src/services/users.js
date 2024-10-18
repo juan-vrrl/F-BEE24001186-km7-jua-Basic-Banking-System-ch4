@@ -2,19 +2,33 @@ import prisma from "../utils/prisma.js";
 
 class UserService {
   // Create a new user
-  async createUser(userData) {
+  async createUser(payload) {
     try {
+      const { name, email, password, identity_type, identity_number, address } =
+        payload;
+
       const newUser = await prisma.user.create({
         data: {
-          name: userData.name,
-          email: userData.email,
-          password: userData.password,
+          name,
+          email,
+          password,
+          profile: {
+            create: {
+              identity_type,
+              identity_number,
+              address,
+            },
+          },
+        },
+        include: {
+          profile: true,
         },
       });
-      return newUser;
+
+      return newUser; // Return the created user
     } catch (error) {
-      console.error("Error creating users:", error);
-      throw new Error("Error creating user");
+      console.error("Error creating user:", error); // Log error for debugging
+      throw new Error("Error creating user"); // Throw a user-friendly error
     }
   }
 
@@ -34,6 +48,9 @@ class UserService {
     try {
       const user = await prisma.user.findUnique({
         where: { id: parseInt(id) },
+        include: {
+          profile: true,
+        },
       });
       if (!user) {
         throw new Error("User not found");
@@ -46,16 +63,30 @@ class UserService {
   }
 
   // Update a user by ID
-  async updateUser(id, userData) {
+  async updateUser(id, payload) {
     try {
+      const { name, email, password, identity_type, identity_number, address } =
+        payload;
+
       const updatedUser = await prisma.user.update({
         where: { id: parseInt(id) },
         data: {
-          name: userData.name,
-          email: userData.email,
-          password: userData.password,
+          name,
+          email,
+          password,
+          profile: {
+            update: {
+              identity_type,
+              identity_number,
+              address,
+            },
+          },
+        },
+        include: {
+          profile: true,
         },
       });
+
       return updatedUser;
     } catch (error) {
       console.error("Error updating user:", error);

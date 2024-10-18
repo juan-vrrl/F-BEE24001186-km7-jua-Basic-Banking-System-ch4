@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan'; 
 import users from './routes/users.js';
+import accounts from './routes/accounts.js';
 import { createServer } from 'http';
 
 async function main() {
@@ -13,6 +14,7 @@ async function main() {
 
   // Routes
  app.use("/v1/users", users); 
+ app.use("/v1/accounts", accounts);
 
   // Start the server
   server.listen(3000, () => {

@@ -5,21 +5,23 @@ import Joi from "joi";
 const router = express.Router();
 
 const userSchema = Joi.object({
-  name: Joi.string().min(1).required(), // Name is required and must be a string
-  email: Joi.string().email().required(), // Email is required and must be a valid email
-  password: Joi.string().min(6).required(), // Password is required and must be at least 6 characters
+  name: Joi.string().min(1).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(), // password must be at least 6 characters
+  identity_type: Joi.string().min(1).required(),
+  identity_number: Joi.string().min(1).required(),
+  address: Joi.string().min(1).required(),
 });
 
-// Middleware to validate user data using joi
+// Middleware to validate input using joi
 const validateInput = (req, res, next) => {
-  const { error } = userSchema.validate(req.body);
+  const { error } = userSchema.validate(req.body); 
   if (error) {
-    return res.status(400).json({ error: error.details[0].message });
+    return res.status(400).json({ error: error.details[0].message }); 
   }
   next();
 };
 
-// Create a new instance of the UserService class
 const userService = new UserService();
 
 // Create a new user

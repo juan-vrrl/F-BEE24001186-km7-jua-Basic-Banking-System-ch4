@@ -12,9 +12,11 @@ model User {
   name         String
   email        String         @unique
   password     String
-  bank_account Bank_Account[]
+  bank_account Bank_Account[] 
 
   profile Profile?
+
+  @@map("users") 
 }
 
 model Profile {
@@ -22,6 +24,8 @@ model Profile {
 
   user_id Int  @unique
   user    User @relation(fields: [user_id], references: [id])
+
+  @@map("profiles")
 }
 
 model Bank_Account {
@@ -31,11 +35,12 @@ model Bank_Account {
   balance             Float
 
   send Transaction[] @relation("sentTransactions")
-
   receive Transaction[] @relation("receivedTransactions")
 
   user_id Int
   user    User @relation(fields: [user_id], references: [id])
+
+  @@map("bank_accounts") 
 }
 
 model Transaction {
@@ -47,4 +52,6 @@ model Transaction {
 
   source_account      Bank_Account @relation("sentTransactions", fields: [source_account_id], references: [id])
   destination_account Bank_Account @relation("receivedTransactions", fields: [destination_account_id], references: [id])
+
+  @@map("transactions") 
 }

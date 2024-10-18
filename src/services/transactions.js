@@ -1,16 +1,20 @@
-import prisma from "../utils/prisma.js";
+import prisma from '../utils/prisma.js';
 
 class TransactionService {
+  constructor() {
+    this.prisma = prisma; // Use the shared Prisma instance
+  }
+
   // Create new transaction
   async createTransaction(payload) {
     try {
-      const { amount, source_id, destination_id } = payload;
+      const { amount, sourceId, destinationId } = payload; 
 
-      const sourceAccount = await prisma.bank_Account.findUnique({
-        where: { id: source_id },
+      const sourceAccount = await this.prisma.bank_Account.findUnique({
+        where: { id: sourceId }, 
       });
-      const destinationAccount = await prisma.bank_Account.findUnique({
-        where: { id: destination_id },
+      const destinationAccount = await this.prisma.bank_Account.findUnique({
+        where: { id: destinationId }, 
       });
 
       // Check if source and destination accounts exist
@@ -23,22 +27,22 @@ class TransactionService {
         throw new Error("Insufficient balance in the source account.");
       }
 
-      const result = await prisma.$transaction(async (prisma) => {
+      const result = await this.prisma.$transaction(async (prisma) => {
         const newTransaction = await prisma.transaction.create({
           data: {
             amount,
-            source_account: { connect: { id: source_id } },
-            destination_account: { connect: { id: destination_id } },
+            sourceAccount: { connect: { id: sourceId } }, 
+            destinationAccount: { connect: { id: destinationId } }, 
           },
         });
 
         await prisma.bank_Account.update({
-          where: { id: source_id },
+          where: { id: sourceId }, 
           data: { balance: sourceAccount.balance - amount },
         });
 
         await prisma.bank_Account.update({
-          where: { id: destination_id },
+          where: { id: destinationId }, 
           data: { balance: destinationAccount.balance + amount },
         });
 
@@ -55,7 +59,7 @@ class TransactionService {
   // Fetch all transactions
   async getAllTransactions() {
     try {
-      const transactions = await prisma.transaction.findMany();
+      const transactions = await this.prisma.transaction.findMany();
       return transactions;
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -66,11 +70,11 @@ class TransactionService {
   // Fetch transaction by ID
   async getTransactionById(id) {
     try {
-      const transaction = await prisma.transaction.findUnique({
+      const transaction = await this.prisma.transaction.findUnique({
         where: { id: parseInt(id) },
         include: {
-          source_account: true,
-          destination_account: true,
+          sourceAccount: true, 
+          destinationAccount: true, 
         },
       });
       if (!transaction) {

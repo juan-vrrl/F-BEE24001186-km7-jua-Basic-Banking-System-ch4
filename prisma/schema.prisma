@@ -8,43 +8,43 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  name       String
-  email      String   @unique
-  password   String
-  created_at DateTime @default(now()) @map("created_at")
-  updated_at DateTime @updatedAt @map("updated_at")
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  bank_account Bank_Account[]
-  profile      Profile?
+  bankAccount Bank_Account[]
+  profile     Profile?
 
   @@map("users")
 }
 
 model Profile {
-  id Int @id @default(autoincrement())
+  id             Int    @id @default(autoincrement())
+  userId         Int    @unique @map("user_id")
+  identityType   String @map("identity_type")
+  identityNumber String @map("identity_number")
+  address        String
 
-  user_id         Int    @unique
-  identity_type   String
-  identity_number String
-  address         String
-  user            User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profiles")
 }
 
 model Bank_Account {
-  id                  Int      @id @default(autoincrement())
-  bank_name           String
-  bank_account_number String
-  balance             Float
-  created_at          DateTime @default(now()) @map("created_at")
+  id                Int      @id @default(autoincrement())
+  bankName          String   @map("bank_name")
+  bankAccountNumber String   @map("bank_account_number")
+  balance           Float
+  createdAt         DateTime @default(now()) @map("created_at")
 
   send    Transaction[] @relation("sentTransactions")
   receive Transaction[] @relation("receivedTransactions")
 
-  user_id Int
-  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  userId Int  @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("bank_accounts")
 }
@@ -52,13 +52,13 @@ model Bank_Account {
 model Transaction {
   id              Int      @id @default(autoincrement())
   amount          Float
-  transactionTime DateTime @default(now())
+  transactionTime DateTime @default(now()) @map("transaction_time")
 
-  source_account_id      Int
-  destination_account_id Int
+  sourceAccountId      Int @map("source_account_id")
+  destinationAccountId Int @map("destination_account_id")
 
-  source_account      Bank_Account @relation("sentTransactions", fields: [source_account_id], references: [id])
-  destination_account Bank_Account @relation("receivedTransactions", fields: [destination_account_id], references: [id])
+  sourceAccount      Bank_Account @relation("sentTransactions", fields: [sourceAccountId], references: [id])
+  destinationAccount Bank_Account @relation("receivedTransactions", fields: [destinationAccountId], references: [id])
 
   @@map("transactions")
 }

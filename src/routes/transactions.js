@@ -6,8 +6,8 @@ const router = express.Router();
 
 const transactionSchema = Joi.object({
   amount: Joi.number().required(), 
-  source_id: Joi.number().integer().required(), 
-  destination_id: Joi.number().integer().required(),
+  sourceId: Joi.number().integer().required(), 
+  destinationId: Joi.number().integer().required(),
 });
 
 // Middleware to validate input using Joi

@@ -8,13 +8,15 @@ datasource db {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  name         String
-  email        String         @unique
-  password     String
-  bank_account Bank_Account[]
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  created_at DateTime @default(now()) @map("created_at")
+  updated_at DateTime @updatedAt @map("updated_at")
 
-  profile Profile?
+  bank_account Bank_Account[]
+  profile      Profile?
 
   @@map("users")
 }
@@ -32,10 +34,11 @@ model Profile {
 }
 
 model Bank_Account {
-  id                  Int    @id @default(autoincrement())
+  id                  Int      @id @default(autoincrement())
   bank_name           String
   bank_account_number String
   balance             Float
+  created_at          DateTime @default(now()) @map("created_at")
 
   send    Transaction[] @relation("sentTransactions")
   receive Transaction[] @relation("receivedTransactions")
@@ -47,8 +50,9 @@ model Bank_Account {
 }
 
 model Transaction {
-  id     Int   @id @default(autoincrement())
-  amount Float
+  id              Int      @id @default(autoincrement())
+  amount          Float
+  transactionTime DateTime @default(now())
 
   source_account_id      Int
   destination_account_id Int

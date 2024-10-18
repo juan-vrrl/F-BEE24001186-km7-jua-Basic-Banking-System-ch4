@@ -52,16 +52,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Update a bank account by ID
-router.put("/:id", validateInput, async (req, res) => {
-  try {
-    const updatedAccount = await bankAccountService.updateBankAccount(req.params.id, req.body);
-    res.status(200).json(updatedAccount);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // Delete a bank account by ID
 router.delete("/:id", async (req, res) => {
   try {

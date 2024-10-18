@@ -50,27 +50,6 @@ class BankAccountService {
     }
   }
 
-  // Update a bank account by ID
-  async updateBankAccount(id, payload) {
-    try {
-      const { bank_name, bank_account_number, balance } = payload;
-
-      const updatedAccount = await prisma.bank_Account.update({
-        where: { id: parseInt(id) },
-        data: {
-          bank_name,
-          bank_account_number,
-          balance,
-        },
-      });
-
-      return updatedAccount;
-    } catch (error) {
-      console.error("Error updating bank account:", error);
-      throw new Error(`Error updating bank account with ID ${id}`);
-    }
-  }
-
   // Delete a bank account by ID
   async deleteBankAccount(id) {
     try {

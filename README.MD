@@ -10,39 +10,52 @@
 
 **Basic Banking System** adalah sebuah REST API simulasi sistem perbankan sederhana. Sistem ini memungkinkan pengguna untuk mendaftarkan akun, membuat dan mengelola rekening bank, serta melakukan transaksi antar-rekening secara aman dan efisien.
 
-### Struktur Model
+## Model
 
-1. **User Model**  
-   Mewakili entitas pengguna yang terdaftar dalam sistem.  
-   - `id`: ID unik pengguna  
-   - `name`: Nama pengguna  
-   - `email`: Email pengguna (unik)  
-   - `password`: Kata sandi pengguna  
-   - Relasi ke `Bank_Account[]` dan `Profile`
+### 1. Model Pengguna (User)
+Mewakili pengguna yang terdaftar dalam sistem.
+- **`id`**: Pengidentifikasi unik untuk pengguna.
+- **`name`**: Nama pengguna.
+- **`email`**: Email pengguna (unik).
+- **`password`**: Kata sandi pengguna.
+- **`created_at`**: Timestamp ketika pengguna dibuat.
+- **`updated_at`**: Timestamp saat terakhir pengguna diperbarui.
+- **Relasi**:
+  - `bank_account`: Relasi one to many dengan `Bank_Account[]`.
+  - `profile`: Relasi one to one dengan `Profile`.
 
-2. **Profile Model**  
-   Menyimpan data pribadi pengguna.  
-   - `id`: ID unik profil  
-   - `user_id`: Relasi ke pengguna yang bersangkutan  
-   - `identity_type`: Jenis identitas (misalnya KTP, SIM)  
-   - `identity_number`: Nomor identitas  
-   - `address`: Alamat pengguna  
+### 2. Model Profil (Profile)
+Menyimpan data pribadi pengguna.
+- **`id`**: Pengidentifikasi unik untuk profil.
+- **`user_id`**: Relasi ke pengguna yang bersangkutan.
+- **`identity_type`**: Jenis identitas (misalnya KTP, SIM).
+- **`identity_number`**: Nomor identitas pengguna.
+- **`address`**: Alamat pengguna.
+- **Relasi**:
+  - `user`: Relasi one to one dengan `User`.
 
-3. **Bank_Account Model**  
-   Menyimpan informasi mengenai rekening bank milik pengguna.  
-   - `id`: ID unik rekening bank  
-   - `bank_name`: Nama bank  
-   - `bank_account_number`: Nomor rekening bank  
-   - `balance`: Saldo rekening  
-   - Relasi ke pengguna (`User`), transaksi sebagai pengirim  (`Transaction[]`), dan transaksi sebagai penerima (`Transaction[]`)
+### 3. Model Rekening Bank (Bank_Account)
+Menyimpan informasi tentang rekening bank milik pengguna.
+- **`id`**: Pengidentifikasi unik untuk rekening bank.
+- **`bank_name`**: Nama bank.
+- **`bank_account_number`**: Nomor rekening bank.
+- **`balance`**: Saldo rekening saat ini.
+- **`created_at`**: Timestamp ketika rekening bank dibuat.
+- **Relasi**:
+  - `send`: Relasi one to many untuk transaksi yang dikirim (`Transaction[]`).
+  - `receive`: Relasi one to many untuk transaksi yang diterima (`Transaction[]`).
+  - `user`: Relasi one to many dengan `User`.
 
-4. **Transaction Model**  
-   Mewakili transaksi yang dilakukan antara dua rekening bank.  
-   - `id`: ID unik transaksi  
-   - `amount`: Jumlah uang yang ditransfer  
-   - `source_account_id`: ID rekening pengirim 
-   - `destination_account_id`: ID rekening penerima
-   - Relasi ke rekening pengirim (`Bank_Account`) dan rekening penerima (`Bank_Account`)
+### 4. Model Transaksi (Transaction)
+Mewakili transaksi yang dilakukan antara dua rekening bank.
+- **`id`**: Pengidentifikasi unik untuk transaksi.
+- **`amount`**: Jumlah uang yang ditransfer.
+- **`transaction_time`**: Timestamp ketika transaksi terjadi.
+- **`source_account_id`**: ID rekening pengirim.
+- **`destination_account_id`**: ID rekening penerima.
+- **Relasi**:
+  - `source_account`: Relasi ke rekening pengirim (`Bank_Account`).
+  - `destination_account`: Relasi ke rekening penerima (`Bank_Account`).
 
 # API Endpoints
 
@@ -65,8 +78,11 @@
   - **Deskripsi**: Mengambil pengguna berdasarkan ID beserta detail profil.
   
 - **PUT /users/:id**
-  - **Deskripsi**: Memperbarui pengguna berdasarkan ID.
-  - **Input**: Sama dengan input untuk membuat pengguna baru.
+  - **Deskripsi**: Memperbarui data nama, email, atau alamat pengguna berdasarkan ID.
+  - **Input**: 
+    - `name`: string, nama pengguna. 
+    - `email`: string, format email.
+    - `address`: string, alamat.
 
 - **DELETE /users/:id**
   - **Deskripsi**: Menghapus pengguna berdasarkan ID.
@@ -86,11 +102,7 @@
   - **Deskripsi**: Mengambil semua akun bank.
   
 - **GET /accounts/:id**
-  - **Deskripsi**: Mengambil akun bank berdasarkan ID.
-  
-- **PUT /accounts/:id**
-  - **Deskripsi**: Memperbarui akun bank berdasarkan ID.
-  - **Input**: Sama dengan input untuk membuat akun bank baru.
+  - **Deskripsi**: Mengambil akun bank berdasarkan ID dan data user pemilik akun.
 
 - **DELETE /accounts/:id**
   - **Deskripsi**: Menghapus akun bank berdasarkan ID.
@@ -110,10 +122,3 @@
   
 - **GET /transactions/:id**
   - **Deskripsi**: Mengambil transaksi berdasarkan ID beserta informasi akun pengirim dan penerima.
-  
-- **PUT /transactions/:id**
-  - **Deskripsi**: Memperbarui transaksi berdasarkan ID.
-  - **Input**: Sama dengan input untuk membuat transaksi baru.
-
-- **DELETE /transactions/:id**
-  - **Deskripsi**: Menghapus transaksi berdasarkan ID.

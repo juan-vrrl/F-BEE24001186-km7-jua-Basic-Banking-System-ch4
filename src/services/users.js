@@ -25,10 +25,10 @@ class UserService {
         },
       });
 
-      return newUser; // Return the created user
+      return newUser;
     } catch (error) {
-      console.error("Error creating user:", error); // Log error for debugging
-      throw new Error("Error creating user"); // Throw a user-friendly error
+      console.error("Error creating user:", error);
+      throw new Error("Error creating user");
     }
   }
 
@@ -65,19 +65,15 @@ class UserService {
   // Update a user by ID
   async updateUser(id, payload) {
     try {
-      const { name, email, password, identity_type, identity_number, address } =
-        payload;
+      const { name, email, address } = payload;
 
       const updatedUser = await prisma.user.update({
         where: { id: parseInt(id) },
         data: {
           name,
           email,
-          password,
           profile: {
             update: {
-              identity_type,
-              identity_number,
               address,
             },
           },

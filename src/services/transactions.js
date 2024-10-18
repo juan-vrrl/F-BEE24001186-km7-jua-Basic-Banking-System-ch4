@@ -82,40 +82,6 @@ class TransactionService {
       throw new Error(`Error fetching transaction with ID ${id}`);
     }
   }
-
-  // Update transaction by ID
-  async updateTransaction(id, payload) {
-    try {
-      const { amount, source_id, destination_id } = payload;
-
-      const updatedTransaction = await prisma.transaction.update({
-        where: { id: parseInt(id) },
-        data: {
-          amount,
-          source_account: { connect: { id: source_id } },
-          destination_account: { connect: { id: destination_id } },
-        },
-      });
-
-      return updatedTransaction;
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-      throw new Error(`Error updating transaction with ID ${id}`);
-    }
-  }
-
-  // Delete transaction by ID
-  async deleteTransaction(id) {
-    try {
-      await prisma.transaction.delete({
-        where: { id: parseInt(id) },
-      });
-      return { message: `Transaction with ID ${id} deleted successfully` };
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-      throw new Error(`Error deleting transaction with ID ${id}`);
-    }
-  }
 }
 
 export default TransactionService;

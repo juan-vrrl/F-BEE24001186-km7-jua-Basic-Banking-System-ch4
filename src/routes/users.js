@@ -13,11 +13,25 @@ const userSchema = Joi.object({
   address: Joi.string().min(1).required(),
 });
 
+const updateUserSchema = Joi.object({
+  name: Joi.string().min(1),
+  email: Joi.string().email(),
+  address: Joi.string().min(1),
+});
+
 // Middleware to validate input using joi
 const validateInput = (req, res, next) => {
-  const { error } = userSchema.validate(req.body); 
+  const { error } = userSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ error: error.details[0].message }); 
+    return res.status(400).json({ error: error.details[0].message });
+  }
+  next();
+};
+
+const validateUpdateInput = (req, res, next) => {
+  const { error } = updateUserSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
   }
   next();
 };
@@ -55,7 +69,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Update a user by id
-router.put("/:id", validateInput, async (req, res) => {
+router.put("/:id", validateUpdateInput, async (req, res) => {
   try {
     const updatedUser = await userService.updateUser(req.params.id, req.body);
     res.status(200).json(updatedUser);

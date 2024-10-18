@@ -2,93 +2,92 @@
 ## Challenge Chapter 2  
 
 ### Juan Verrel Tanuwijaya  
-### Kelas: BEJS-1  
+### Class: BEJS-1  
 
 ---
 
-## Deskripsi
+## Description
 
-**Basic Banking System** adalah sebuah REST API simulasi sistem perbankan sederhana. Sistem ini memungkinkan pengguna untuk mendaftarkan akun, membuat dan mengelola rekening bank, serta melakukan transaksi antar-rekening secara aman dan efisien.
+**Basic Banking System** is a REST API simulating a simple banking system. This system allows users to register accounts, create and manage bank accounts, and perform transactions between accounts securely and efficiently.
 
 ## Prerequisite
-- Node Js v10
+- Node.js v10
 - PostgreSQL v14
 
 ## How to use
-- For database connection use `DATABASE_URL` from `.env.sample` and copy it to your `.env` file, then change the value accordingly to your user, password, and database name.
-- For running program use "npm run start" or "npm run dev" (using nodemon).
+- For database connection, use `DATABASE_URL` from `.env.sample`, copy it to your `.env` file, and change the value accordingly to your user, password, and database name.
+- To run the program, use "npm run start" or "npm run dev" (using nodemon).
 
 # API Endpoints
 
 ## Users Endpoints
 
 - **POST /users**
-  - **Deskripsi**: Membuat pengguna baru.
+  - **Description**: Create a new user.
   - **Input**:
-    - `name`: string, nama pengguna.
-    - `email`: string, format email.
-    - `password`: string, minimal 6 karakter.
-    - `identityType`: string, jenis identitas.
-    - `identityNumber`: string, nomor identitas.
-    - `address`: string, alamat.
+    - `name`: string, user's name.
+    - `email`: string, email format.
+    - `password`: string, minimum 6 characters.
+    - `identityType`: string, type of identity.
+    - `identityNumber`: string, identity number.
+    - `address`: string, address.
 
 - **GET /users**
-  - **Deskripsi**: Mengambil semua pengguna.
+  - **Description**: Retrieve all users.
   
 - **GET /users/:id**
-  - **Deskripsi**: Mengambil pengguna berdasarkan ID beserta detail profil.
+  - **Description**: Retrieve a user by ID along with profile details.
   
 - **PUT /users/:id**
-  - **Deskripsi**: Memperbarui data nama, email, atau alamat pengguna berdasarkan ID.
+  - **Description**: Update the name, email, or address of a user by ID.
   - **Input**: 
-    - `name`: string, nama pengguna. 
-    - `email`: string, format email.
-    - `address`: string, alamat.
+    - `name`: string, user's name. 
+    - `email`: string, email format.
+    - `address`: string, address.
 
 - **DELETE /users/:id**
-  - **Deskripsi**: Menghapus pengguna berdasarkan ID.
-
+  - **Description**: Delete a user by ID.
 
 ## Bank Accounts Endpoints
 
 - **POST /accounts**
-  - **Deskripsi**: Membuat akun bank baru.
+  - **Description**: Create a new bank account.
   - **Input**:
-    - `bankName`: string, nama bank.
-    - `bankAccountNumber`: string, nomor rekening bank.
-    - `balance`: number, saldo akun.
-    - `userId`: integer, ID pengguna.
+    - `bankName`: string, name of the bank.
+    - `bankAccountNumber`: string, bank account number.
+    - `balance`: number, account balance.
+    - `userId`: integer, user ID.
 
 - **GET /accounts**
-  - **Deskripsi**: Mengambil semua akun bank.
+  - **Description**: Retrieve all bank accounts.
   
 - **GET /accounts/:id**
-  - **Deskripsi**: Mengambil akun bank berdasarkan ID dan data user pemilik akun.
+  - **Description**: Retrieve a bank account by ID along with the user data of the account owner.
 
 - **DELETE /accounts/:id**
-  - **Deskripsi**: Menghapus akun bank berdasarkan ID.
+  - **Description**: Delete a bank account by ID.
 
 - **POST /accounts/:id/deposit**
-  - **Deskripsi**: Menambah uang ke balance akun.
+  - **Description**: Add money to the account balance.
   - **Input**:
-    - `amount`: number, jumlah uang.
+    - `amount`: number, amount of money.
 
 - **POST /accounts/:id/withdraw**
-  - **Deskripsi**: Menarik uang dari balance akun.
+  - **Description**: Withdraw money from the account balance.
   - **Input**:
-    - `amount`: number, jumlah uang.
+    - `amount`: number, amount of money.
 
 ## Transactions Endpoints
 
 - **POST /transactions**
-  - **Deskripsi**: Membuat transaksi baru.
+  - **Description**: Create a new transaction.
   - **Input**:
-    - `amount`: number, jumlah uang yang ditransfer.
-    - `sourceId`: integer, ID akun pengirim.
-    - `destinationId`: integer, ID akun penerima.
+    - `amount`: number, amount of money to be transferred.
+    - `sourceId`: integer, ID of the sender's account.
+    - `destinationId`: integer, ID of the recipient's account.
 
 - **GET /transactions**
-  - **Deskripsi**: Mengambil semua transaksi.
+  - **Description**: Retrieve all transactions.
   
 - **GET /transactions/:id**
-  - **Deskripsi**: Mengambil transaksi berdasarkan ID beserta informasi akun pengirim dan penerima.
+  - **Description**: Retrieve a transaction by ID along with information about the sender and recipient accounts.

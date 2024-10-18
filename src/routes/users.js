@@ -8,8 +8,8 @@ const userSchema = Joi.object({
   name: Joi.string().min(1).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(), // password must be at least 6 characters
-  identity_type: Joi.string().min(1).required(),
-  identity_number: Joi.string().min(1).required(),
+  identityType: Joi.string().min(1).required(),
+  identityNumber: Joi.string().min(1).required(),
   address: Joi.string().min(1).required(),
 });
 

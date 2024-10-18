@@ -6,56 +6,17 @@
 
 ---
 
-## Deskripsi Singkat  
+## Deskripsi
 
 **Basic Banking System** adalah sebuah REST API simulasi sistem perbankan sederhana. Sistem ini memungkinkan pengguna untuk mendaftarkan akun, membuat dan mengelola rekening bank, serta melakukan transaksi antar-rekening secara aman dan efisien.
 
-## Model
+## Prerequisite
+- Node Js v10
+- PostgreSQL v14
 
-### 1. Model Pengguna (User)
-Mewakili pengguna yang terdaftar dalam sistem.
-- **`id`**: Pengidentifikasi unik untuk pengguna.
-- **`name`**: Nama pengguna.
-- **`email`**: Email pengguna (unik).
-- **`password`**: Kata sandi pengguna.
-- **`created_at`**: Timestamp ketika pengguna dibuat.
-- **`updated_at`**: Timestamp saat terakhir pengguna diperbarui.
-- **Relasi**:
-  - `bank_account`: Relasi one to many dengan `Bank_Account[]`.
-  - `profile`: Relasi one to one dengan `Profile`.
-
-### 2. Model Profil (Profile)
-Menyimpan data pribadi pengguna.
-- **`id`**: Pengidentifikasi unik untuk profil.
-- **`user_id`**: Relasi ke pengguna yang bersangkutan.
-- **`identity_type`**: Jenis identitas (misalnya KTP, SIM).
-- **`identity_number`**: Nomor identitas pengguna.
-- **`address`**: Alamat pengguna.
-- **Relasi**:
-  - `user`: Relasi one to one dengan `User`.
-
-### 3. Model Rekening Bank (Bank_Account)
-Menyimpan informasi tentang rekening bank milik pengguna.
-- **`id`**: Pengidentifikasi unik untuk rekening bank.
-- **`bank_name`**: Nama bank.
-- **`bank_account_number`**: Nomor rekening bank.
-- **`balance`**: Saldo rekening saat ini.
-- **`created_at`**: Timestamp ketika rekening bank dibuat.
-- **Relasi**:
-  - `send`: Relasi one to many untuk transaksi yang dikirim (`Transaction[]`).
-  - `receive`: Relasi one to many untuk transaksi yang diterima (`Transaction[]`).
-  - `user`: Relasi one to many dengan `User`.
-
-### 4. Model Transaksi (Transaction)
-Mewakili transaksi yang dilakukan antara dua rekening bank.
-- **`id`**: Pengidentifikasi unik untuk transaksi.
-- **`amount`**: Jumlah uang yang ditransfer.
-- **`transaction_time`**: Timestamp ketika transaksi terjadi.
-- **`source_account_id`**: ID rekening pengirim.
-- **`destination_account_id`**: ID rekening penerima.
-- **Relasi**:
-  - `source_account`: Relasi ke rekening pengirim (`Bank_Account`).
-  - `destination_account`: Relasi ke rekening penerima (`Bank_Account`).
+## How to use
+- For database connection use `DATABASE_URL` from `.env.sample` and copy it to your `.env` file, then change the value accordingly to your user, password, and database name.
+- For running program use "npm run start" or "npm run dev" (using nodemon).
 
 # API Endpoints
 
@@ -67,8 +28,8 @@ Mewakili transaksi yang dilakukan antara dua rekening bank.
     - `name`: string, nama pengguna.
     - `email`: string, format email.
     - `password`: string, minimal 6 karakter.
-    - `identity_type`: string, jenis identitas.
-    - `identity_number`: string, nomor identitas.
+    - `identityType`: string, jenis identitas.
+    - `identityNumber`: string, nomor identitas.
     - `address`: string, alamat.
 
 - **GET /users**
@@ -93,10 +54,10 @@ Mewakili transaksi yang dilakukan antara dua rekening bank.
 - **POST /accounts**
   - **Deskripsi**: Membuat akun bank baru.
   - **Input**:
-    - `bank_name`: string, nama bank.
-    - `bank_account_number`: string, nomor rekening bank.
+    - `bankName`: string, nama bank.
+    - `bankAccountNumber`: string, nomor rekening bank.
     - `balance`: number, saldo akun.
-    - `user_id`: integer, ID pengguna.
+    - `userId`: integer, ID pengguna.
 
 - **GET /accounts**
   - **Deskripsi**: Mengambil semua akun bank.
@@ -107,6 +68,15 @@ Mewakili transaksi yang dilakukan antara dua rekening bank.
 - **DELETE /accounts/:id**
   - **Deskripsi**: Menghapus akun bank berdasarkan ID.
 
+- **POST /accounts/:id/deposit**
+  - **Deskripsi**: Menambah uang ke balance akun.
+  - **Input**:
+    - `amount`: number, jumlah uang.
+
+- **POST /accounts/:id/withdraw**
+  - **Deskripsi**: Menarik uang dari balance akun.
+  - **Input**:
+    - `amount`: number, jumlah uang.
 
 ## Transactions Endpoints
 
@@ -114,8 +84,8 @@ Mewakili transaksi yang dilakukan antara dua rekening bank.
   - **Deskripsi**: Membuat transaksi baru.
   - **Input**:
     - `amount`: number, jumlah uang yang ditransfer.
-    - `source_id`: integer, ID akun pengirim.
-    - `destination_id`: integer, ID akun penerima.
+    - `sourceId`: integer, ID akun pengirim.
+    - `destinationId`: integer, ID akun penerima.
 
 - **GET /transactions**
   - **Deskripsi**: Mengambil semua transaksi.

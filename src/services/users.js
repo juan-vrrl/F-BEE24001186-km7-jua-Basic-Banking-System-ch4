@@ -1,21 +1,24 @@
 import prisma from "../utils/prisma.js";
 
 class UserService {
+  constructor() {
+    this.prisma = prisma; // Use the shared Prisma instance
+  }
+
   // Create a new user
   async createUser(payload) {
     try {
-      const { name, email, password, identity_type, identity_number, address } =
-        payload;
+      const { name, email, password, identityType, identityNumber, address } = payload; 
 
-      const newUser = await prisma.user.create({
+      const newUser = await this.prisma.user.create({
         data: {
           name,
           email,
           password,
           profile: {
             create: {
-              identity_type,
-              identity_number,
+              identityType, 
+              identityNumber, 
               address,
             },
           },
@@ -35,7 +38,11 @@ class UserService {
   // Fetch all users
   async getAllUsers() {
     try {
-      const users = await prisma.user.findMany();
+      const users = await this.prisma.user.findMany({
+        include: {
+          profile: true, 
+        },
+      });
       return users;
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -46,7 +53,7 @@ class UserService {
   // Fetch a single user by ID
   async getUserById(id) {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id: parseInt(id) },
         include: {
           profile: true,
@@ -67,7 +74,7 @@ class UserService {
     try {
       const { name, email, address } = payload;
 
-      const updatedUser = await prisma.user.update({
+      const updatedUser = await this.prisma.user.update({
         where: { id: parseInt(id) },
         data: {
           name,
@@ -93,7 +100,7 @@ class UserService {
   // Delete a user by ID
   async deleteUser(id) {
     try {
-      await prisma.user.delete({
+      await this.prisma.user.delete({
         where: { id: parseInt(id) },
       });
       return { message: `User with ID ${id} deleted successfully` };

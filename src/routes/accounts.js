@@ -5,15 +5,27 @@ import Joi from "joi";
 const router = express.Router();
 
 const bankAccountSchema = Joi.object({
-  bank_name: Joi.string().min(1).required(),
-  bank_account_number: Joi.string().min(1).required(),
+  bankName: Joi.string().min(1).required(),
+  bankAccountNumber: Joi.string().min(1).required(),
   balance: Joi.number().required(), 
-  user_id: Joi.number().integer().required(), 
+  userId: Joi.number().integer().required(), 
+});
+
+const amountSchema = Joi.object({
+  amount: Joi.number().positive().required(),
 });
 
 // Middleware to validate input using Joi
 const validateInput = (req, res, next) => {
   const { error } = bankAccountSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+  next();
+};
+
+const validateInputAmount = (req, res, next) => {
+  const { error } = amountSchema.validate(req.body);
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
@@ -58,6 +70,30 @@ router.delete("/:id", async (req, res) => {
     const deletedMessage = await bankAccountService.deleteBankAccount(req.params.id);
     res.status(200).json(deletedMessage);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Deposit amount to a bank account
+router.put("/:id/deposit", validateInputAmount, async (req, res) => {
+  try {
+    const accountId = req.params.id;
+    const updatedAccount = await bankAccountService.depositAmount({ ...req.body, accountId});
+    res.status(200).json(updatedAccount);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Withdraw amount from a bank account
+router.put("/:id/withdraw", validateInputAmount, async (req, res) => {
+  try {
+    const accountId = req.params.id;
+    const updatedAccount = await bankAccountService.withdrawAmount( {...req.body, accountId});
+    res.status(200).json(updatedAccount);
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 });

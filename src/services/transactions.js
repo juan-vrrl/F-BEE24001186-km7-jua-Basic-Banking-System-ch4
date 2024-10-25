@@ -1,8 +1,9 @@
 import prisma from '../utils/prisma.js';
+import AppError from '../utils/AppError.js';
 
 class TransactionService {
   constructor() {
-    this.prisma = prisma; // Use the shared Prisma instance
+    this.prisma = prisma; 
   }
 
   // Create new transaction
@@ -19,12 +20,12 @@ class TransactionService {
 
       // Check if source and destination accounts exist
       if (!sourceAccount || !destinationAccount) {
-        throw new Error("Source or destination bank account not found.");
+        throw new AppError("Source or destination bank account not found.", 404); 
       }
 
       // Check if source account balance is sufficient
       if (sourceAccount.balance < amount) {
-        throw new Error("Insufficient balance in the source account.");
+        throw new AppError("Insufficient balance in the source account.", 400); 
       }
 
       const result = await this.prisma.$transaction(async (prisma) => {
@@ -52,7 +53,7 @@ class TransactionService {
       return result;
     } catch (error) {
       console.error("Error creating transaction:", error);
-      throw new Error(error.message);
+      throw error; 
     }
   }
 
@@ -63,7 +64,7 @@ class TransactionService {
       return transactions;
     } catch (error) {
       console.error("Error fetching transactions:", error);
-      throw new Error("Error fetching transactions");
+      throw error; 
     }
   }
 
@@ -78,12 +79,12 @@ class TransactionService {
         },
       });
       if (!transaction) {
-        throw new Error("Transaction not found");
+        throw new AppError("Transaction not found", 404); 
       }
       return transaction;
     } catch (error) {
       console.error("Error fetching transaction:", error);
-      throw new Error(`Error fetching transaction with ID ${id}`);
+      throw error; 
     }
   }
 }

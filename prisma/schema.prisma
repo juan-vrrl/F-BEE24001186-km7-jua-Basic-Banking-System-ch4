@@ -57,8 +57,8 @@ model Transaction {
   sourceAccountId      Int @map("source_account_id")
   destinationAccountId Int @map("destination_account_id")
 
-  sourceAccount      Bank_Account @relation("sentTransactions", fields: [sourceAccountId], references: [id])
-  destinationAccount Bank_Account @relation("receivedTransactions", fields: [destinationAccountId], references: [id])
+  sourceAccount      Bank_Account @relation("sentTransactions", fields: [sourceAccountId], references: [id], onDelete: Cascade)
+  destinationAccount Bank_Account @relation("receivedTransactions", fields: [destinationAccountId], references: [id], onDelete: Cascade)
 
   @@map("transactions")
 }

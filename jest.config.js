@@ -6,4 +6,7 @@ export default {
     '^.+\\.jsx?$': 'babel-jest',
   },
   moduleFileExtensions: ['js', 'json'],
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
+  verbose: true,
 };

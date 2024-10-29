@@ -6,36 +6,6 @@ class UserService {
     this.prisma = prisma;
   }
 
-  // Create a new user
-  async createUser(payload) {
-    try {
-      const { name, email, password, identityType, identityNumber, address } = payload;
-
-      const newUser = await this.prisma.user.create({
-        data: {
-          name,
-          email,
-          password,
-          profile: {
-            create: {
-              identityType,
-              identityNumber,
-              address,
-            },
-          },
-        },
-        include: {
-          profile: true,
-        },
-      });
-
-      return newUser;
-    } catch (error) {
-      console.error("Error creating user:", error);
-      throw error; 
-    }
-  }
-
   // Fetch all users
   async getAllUsers() {
     try {
@@ -47,7 +17,7 @@ class UserService {
       return users;
     } catch (error) {
       console.error("Error fetching users:", error);
-      throw error; 
+      throw error;
     }
   }
 
@@ -62,13 +32,13 @@ class UserService {
       });
 
       if (!user) {
-        throw new AppError("User not found", 404); 
+        throw new AppError("User not found", 404);
       }
 
       return user;
     } catch (error) {
       console.error("Error fetching user:", error);
-      throw error; 
+      throw error;
     }
   }
 
@@ -82,7 +52,7 @@ class UserService {
       });
 
       if (!user) {
-        throw new AppError("User not found", 404); 
+        throw new AppError("User not found", 404);
       }
 
       const updatedUser = await this.prisma.user.update({
@@ -104,7 +74,7 @@ class UserService {
       return updatedUser;
     } catch (error) {
       console.error("Error updating user:", error);
-      throw error; 
+      throw error;
     }
   }
 
@@ -116,7 +86,7 @@ class UserService {
       });
 
       if (!user) {
-        throw new AppError("User not found", 404); 
+        throw new AppError("User not found", 404);
       }
 
       await this.prisma.user.delete({
@@ -126,7 +96,7 @@ class UserService {
       return { message: `User with ID ${id} deleted successfully` };
     } catch (error) {
       console.error("Error deleting user:", error);
-      throw error; 
+      throw error;
     }
   }
 }

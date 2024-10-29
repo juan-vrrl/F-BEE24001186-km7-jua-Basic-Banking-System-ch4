@@ -1,91 +1,213 @@
 import express from "express";
-import UserService from "../services/users.js";
-import Joi from "joi";
+import { validateUpdateInput } from "../middlewares/validator.js";
+import {
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+} from "../controllers/users.js";
+import verifyToken from "../middlewares/auth.js";
 
 const router = express.Router();
 
-const userSchema = Joi.object({
-  name: Joi.string().min(1).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(), // password must be at least 6 characters
-  identityType: Joi.string().min(1).required(),
-  identityNumber: Joi.string().min(1).required(),
-  address: Joi.string().min(1).required(),
-});
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Users]
+ *     security:          
+ *       - BearerAuth: [] 
+ *     responses:
+ *       200:
+ *         description: A list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.get("/", verifyToken, getAllUsers);
 
-const updateUserSchema = Joi.object({
-  name: Joi.string().min(1),
-  email: Joi.string().email(),
-  address: Joi.string().min(1),
-});
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags: [Users]
+ *     security:
+ *      - BearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the user to retrieve
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: A user object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserWithProfile'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "User not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.get("/:id", verifyToken, getUserById);
 
-// Middleware to validate input using joi
-const validateInput = (req, res, next) => {
-  const { error } = userSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update a user by ID
+ *     tags: [Users]
+ *     security:
+ *      - BearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the user to update
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Jane Doe
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: jane.doe@example.com
+ *               address:
+ *                 type: string
+ *                 example: "456 Another St, Anycity"
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Invalid input data"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "User not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.put("/:id", verifyToken, validateUpdateInput, updateUser);
 
-const validateUpdateInput = (req, res, next) => {
-  const { error } = updateUserSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
-
-const userService = new UserService();
-
-// Create a new user
-router.post("/", validateInput, async (req, res) => {
-  try {
-    const newUser = await userService.createUser(req.body);
-    res.status(201).json(newUser);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-//  Fetch all users
-router.get("/", async (req, res) => {
-  try {
-    const users = await userService.getAllUsers();
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Fetch a user by ID
-router.get("/:id", async (req, res) => {
-  try {
-    const user = await userService.getUserById(req.params.id);
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
-  }
-});
-
-// Update a user by id
-router.put("/:id", validateUpdateInput, async (req, res) => {
-  try {
-    const updatedUser = await userService.updateUser(req.params.id, req.body);
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Delete a user by id
-router.delete("/:id", async (req, res) => {
-  try {
-    const deletedUser = await userService.deleteUser(req.params.id);
-    res.status(200).json(deletedUser);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete a user by ID
+ *     tags: [Users]
+ *     security:
+ *     - BearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the user to delete
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "User not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.delete("/:id", verifyToken, deleteUser);
 
 export default router;

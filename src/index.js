@@ -1,10 +1,9 @@
 import express from "express";
 import path from "path";
-import morgan from "morgan";
-import users from "./routes/users.js";
-import accounts from "./routes/accounts.js";
-import transactions from "./routes/transactions.js";
 import { createServer } from "http";
+import Routes from "./routes/index.js";
+import Middleware from "./middlewares/index.js";
+import errorHandler from "./middlewares/errorHandler.js";
 
 // Initialize express app
 const app = express();
@@ -12,23 +11,26 @@ const server = createServer(app);
 
 // View Engine
 app.set("views", path.join(path.resolve(), "/src/views"));
-app.set("view engine", "ejs"); 
+app.set("view engine", "ejs");
 
-// Middleware
-app.use(morgan("dev"));
-app.use(express.json());
+// Configure middleware
+Middleware(app);
 
-// Routes
-app.use("/api/v1/users", users);
-app.use("/api/v1/accounts", accounts);
-app.use("/api/v1/transactions", transactions);
+// Configure routes
+Routes(app);
 
-// Render index.ejs for the root route
+// Error handling 
+app.use(errorHandler);
+
+// View Engine Home Route
 app.get("/", (req, res) => {
-    res.render("index", { title: "Home Page" });
+  res.render("index", { title: "Home Page" });
 });
 
 // Start the server
 server.listen(3000, () => {
-    console.log("Server is running on http://localhost:3000");
+  console.log("Server is running on http://localhost:3000");
+  console.log(
+    `Swagger docs available at http://localhost:3000/api/v1/api-docs`
+  );
 });

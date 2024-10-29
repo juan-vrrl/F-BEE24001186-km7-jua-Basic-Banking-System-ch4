@@ -1,101 +1,343 @@
 import express from "express";
-import BankAccountService from "../services/accounts.js"; 
-import Joi from "joi";
+import {
+  createBankAccount,
+  getAllBankAccounts,
+  getBankAccountById,
+  deleteBankAccount,
+  depositToBankAccount,
+  withdrawFromBankAccount,
+} from "../controllers/accounts.js";
+import { validateInputAccount, validateInputAmount } from "../middlewares/validator.js";
+import verifyToken from "../middlewares/auth.js";
 
 const router = express.Router();
 
-const bankAccountSchema = Joi.object({
-  bankName: Joi.string().min(1).required(),
-  bankAccountNumber: Joi.string().min(1).required(),
-  balance: Joi.number().required(), 
-  userId: Joi.number().integer().required(), 
-});
+/**
+ * @swagger
+ * tags:
+ *   name: Bank Accounts
+ *   description: API to manage bank accounts
+ */
 
-const amountSchema = Joi.object({
-  amount: Joi.number().positive().required(),
-});
+/**
+ * @swagger
+ * /accounts:
+ *   post:
+ *     summary: Create a new bank account
+ *     tags: [Bank Accounts]
+ *     security:
+ *      - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bankName:
+ *                 type: string
+ *                 example: "Bank of Example"
+ *               bankAccountNumber:
+ *                 type: string
+ *                 example: "123456789"
+ *               balance:
+ *                 type: number
+ *                 format: number
+ *                 example: 500.0
+ *               userId:
+ *                 type: integer
+ *                 example: 1
+ *     responses:
+ *       201:
+ *         description: Bank account created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BankAccount'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Invalid input data."
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error."
+ */
+router.post("/", verifyToken, validateInputAccount, createBankAccount);
 
-// Middleware to validate input using Joi
-const validateInput = (req, res, next) => {
-  const { error } = bankAccountSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
+/**
+ * @swagger
+ * /accounts:
+ *   get:
+ *     summary: Fetch all bank accounts
+ *     tags: [Bank Accounts]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of bank accounts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/BankAccount'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.get("/", verifyToken, getAllBankAccounts);
 
-const validateInputAmount = (req, res, next) => {
-  const { error } = amountSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
+/**
+ * @swagger
+ * /accounts/{id}:
+ *   get:
+ *     summary: Fetch a single bank account by ID along with user information
+ *     tags: [Bank Accounts]
+ *     security:
+ *     - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the bank account
+ *     responses:
+ *       200:
+ *         description: Bank account data including user information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BankAccountWithUser'
+ *       404:
+ *         description: Bank account not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Bank account not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.get("/:id", verifyToken, getBankAccountById);
 
-const bankAccountService = new BankAccountService();
+/**
+ * @swagger
+ * /accounts/{id}:
+ *   delete:
+ *     summary: Delete a bank account by ID
+ *     tags: [Bank Accounts]
+ *     security:
+ *      - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the bank account to be deleted
+ *     responses:
+ *       200:
+ *         description: Bank account deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BankAccount'
+ *       404:
+ *         description: Bank account not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Bank account not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.delete("/:id", verifyToken, deleteBankAccount);
 
-// Create a new bank account
-router.post("/", validateInput, async (req, res) => {
-  try {
-    const newAccount = await bankAccountService.createBankAccount(req.body);
-    res.status(201).json(newAccount);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+/**
+ * @swagger
+ * /accounts/{id}/deposit:
+ *   put:
+ *     summary: Deposit amount to a bank account
+ *     tags: [Bank Accounts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the bank account
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Amount'
+ *     responses:
+ *       200:
+ *         description: Deposit successful
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 example: 5000
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Invalid input"
+ *       404:
+ *         description: Bank account not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Account not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.put("/:id/deposit", verifyToken, validateInputAmount, depositToBankAccount);
 
-// Fetch all bank accounts
-router.get("/", async (req, res) => {
-  try {
-    const bankAccounts = await bankAccountService.getAllBankAccounts();
-    res.status(200).json(bankAccounts);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Fetch a bank account by ID
-router.get("/:id", async (req, res) => {
-  try {
-    const bankAccount = await bankAccountService.getBankAccountById(req.params.id);
-    res.status(200).json(bankAccount);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
-  }
-});
-
-// Delete a bank account by ID
-router.delete("/:id", async (req, res) => {
-  try {
-    const deletedMessage = await bankAccountService.deleteBankAccount(req.params.id);
-    res.status(200).json(deletedMessage);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Deposit amount to a bank account
-router.put("/:id/deposit", validateInputAmount, async (req, res) => {
-  try {
-    const accountId = req.params.id;
-    const updatedAccount = await bankAccountService.depositAmount({ ...req.body, accountId});
-    res.status(200).json(updatedAccount);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Withdraw amount from a bank account
-router.put("/:id/withdraw", validateInputAmount, async (req, res) => {
-  try {
-    const accountId = req.params.id;
-    const updatedAccount = await bankAccountService.withdrawAmount( {...req.body, accountId});
-    res.status(200).json(updatedAccount);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: error.message });
-  }
-});
+/**
+ * @swagger
+ * /accounts/{id}/withdraw:
+ *   put:
+ *     summary: Withdraw amount from a bank account
+ *     tags: [Bank Accounts]
+ *     security:
+ *      - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the bank account
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 example: 5000
+ *     responses:
+ *       200:
+ *         description: Withdrawal successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BankAccount'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Invalid input"
+ *       404:
+ *         description: Bank account not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Account not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Internal Server Error"
+ */
+router.put("/:id/withdraw", verifyToken, validateInputAmount, withdrawFromBankAccount);
 
 export default router;

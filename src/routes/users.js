@@ -86,7 +86,7 @@ router.get("/", verifyToken, getAllUsers);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/:id", getUserById);
+router.get("/:id", verifyToken, getUserById);
 
 /**
  * @swagger
@@ -161,7 +161,7 @@ router.get("/:id", getUserById);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.put("/:id", validateUpdateInput, updateUser);
+router.put("/:id", verifyToken, validateUpdateInput, updateUser);
 
 /**
  * @swagger
@@ -208,6 +208,6 @@ router.put("/:id", validateUpdateInput, updateUser);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.delete("/:id", deleteUser);
+router.delete("/:id", verifyToken, deleteUser);
 
 export default router;

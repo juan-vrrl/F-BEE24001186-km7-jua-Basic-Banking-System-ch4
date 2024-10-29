@@ -5,6 +5,7 @@ import {
   getAllTransactions,
   getTransactionById,
 } from "../controllers/transactions.js";
+import verifyToken from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -80,7 +81,7 @@ const router = express.Router();
  *               example:
  *                 error: "Internal Server Error"
  */
-router.post("/", validateTransactionInput, createTransaction);
+router.post("/", verifyToken, validateTransactionInput, createTransaction);
 
 /**
  * @swagger
@@ -111,7 +112,7 @@ router.post("/", validateTransactionInput, createTransaction);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/", getAllTransactions);
+router.get("/", verifyToken, getAllTransactions);
 
 /**
  * @swagger
@@ -158,6 +159,6 @@ router.get("/", getAllTransactions);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/:id", getTransactionById);
+router.get("/:id", verifyToken, getTransactionById);
 
 export default router;

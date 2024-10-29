@@ -8,6 +8,7 @@ import {
   withdrawFromBankAccount,
 } from "../controllers/accounts.js";
 import { validateInputAccount, validateInputAmount } from "../middlewares/validator.js";
+import verifyToken from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -76,7 +77,7 @@ const router = express.Router();
  *               example:
  *                 error: "Internal Server Error."
  */
-router.post("/", validateInputAccount, createBankAccount);
+router.post("/", verifyToken, validateInputAccount, createBankAccount);
 
 /**
  * @swagger
@@ -107,7 +108,7 @@ router.post("/", validateInputAccount, createBankAccount);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/", getAllBankAccounts);
+router.get("/", verifyToken, getAllBankAccounts);
 
 /**
  * @swagger
@@ -154,7 +155,7 @@ router.get("/", getAllBankAccounts);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/:id", getBankAccountById);
+router.get("/:id", verifyToken, getBankAccountById);
 
 /**
  * @swagger
@@ -201,7 +202,7 @@ router.get("/:id", getBankAccountById);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.delete("/:id", deleteBankAccount);
+router.delete("/:id", verifyToken, deleteBankAccount);
 
 /**
  * @swagger
@@ -269,7 +270,7 @@ router.delete("/:id", deleteBankAccount);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.put("/:id/deposit", validateInputAmount, depositToBankAccount);
+router.put("/:id/deposit", verifyToken, validateInputAmount, depositToBankAccount);
 
 /**
  * @swagger
@@ -337,6 +338,6 @@ router.put("/:id/deposit", validateInputAmount, depositToBankAccount);
  *               example:
  *                 error: "Internal Server Error"
  */
-router.put("/:id/withdraw", validateInputAmount, withdrawFromBankAccount);
+router.put("/:id/withdraw", verifyToken, validateInputAmount, withdrawFromBankAccount);
 
 export default router;

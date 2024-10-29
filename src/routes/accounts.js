@@ -1,39 +1,15 @@
 import express from "express";
-import BankAccountService from "../services/accounts.js";
-import Joi from "joi";
-import AppError from "../utils/AppError.js";
+import {
+  createBankAccount,
+  getAllBankAccounts,
+  getBankAccountById,
+  deleteBankAccount,
+  depositToBankAccount,
+  withdrawFromBankAccount,
+} from "../controllers/accounts.js";
+import { validateInputAccount, validateInputAmount } from "../middlewares/validator.js";
 
 const router = express.Router();
-
-const bankAccountSchema = Joi.object({
-  bankName: Joi.string().min(1).required(),
-  bankAccountNumber: Joi.string().min(1).required(),
-  balance: Joi.number().required(),
-  userId: Joi.number().integer().required(),
-});
-
-const amountSchema = Joi.object({
-  amount: Joi.number().positive().required(),
-});
-
-// Middleware to validate input using Joi
-const validateInput = (req, res, next) => {
-  const { error } = bankAccountSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
-
-const validateInputAmount = (req, res, next) => {
-  const { error } = amountSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
-
-const bankAccountService = new BankAccountService();
 
 /**
  * @swagger
@@ -48,6 +24,8 @@ const bankAccountService = new BankAccountService();
  *   post:
  *     summary: Create a new bank account
  *     tags: [Bank Accounts]
+ *     security:
+ *      - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -98,14 +76,7 @@ const bankAccountService = new BankAccountService();
  *               example:
  *                 error: "Internal Server Error."
  */
-router.post("/", validateInput, async (req, res, next) => {
-  try {
-    const newAccount = await bankAccountService.createBankAccount(req.body);
-    res.status(201).json(newAccount);
-  } catch (error) {
-    next(error);
-  }
-});
+router.post("/", validateInputAccount, createBankAccount);
 
 /**
  * @swagger
@@ -113,6 +84,8 @@ router.post("/", validateInput, async (req, res, next) => {
  *   get:
  *     summary: Fetch all bank accounts
  *     tags: [Bank Accounts]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: List of bank accounts
@@ -134,14 +107,7 @@ router.post("/", validateInput, async (req, res, next) => {
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/", async (req, res, next) => {
-  try {
-    const bankAccounts = await bankAccountService.getAllBankAccounts();
-    res.status(200).json(bankAccounts);
-  } catch (error) {
-    next(error);
-  }
-});
+router.get("/", getAllBankAccounts);
 
 /**
  * @swagger
@@ -149,6 +115,8 @@ router.get("/", async (req, res, next) => {
  *   get:
  *     summary: Fetch a single bank account by ID along with user information
  *     tags: [Bank Accounts]
+ *     security:
+ *     - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -186,16 +154,7 @@ router.get("/", async (req, res, next) => {
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/:id", async (req, res, next) => {
-  try {
-    const bankAccount = await bankAccountService.getBankAccountById(
-      req.params.id
-    );
-    res.status(200).json(bankAccount);
-  } catch (error) {
-    next(error);
-  }
-});
+router.get("/:id", getBankAccountById);
 
 /**
  * @swagger
@@ -203,6 +162,8 @@ router.get("/:id", async (req, res, next) => {
  *   delete:
  *     summary: Delete a bank account by ID
  *     tags: [Bank Accounts]
+ *     security:
+ *      - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -240,16 +201,7 @@ router.get("/:id", async (req, res, next) => {
  *               example:
  *                 error: "Internal Server Error"
  */
-router.delete("/:id", async (req, res, next) => {
-  try {
-    const deletedMessage = await bankAccountService.deleteBankAccount(
-      req.params.id
-    );
-    res.status(200).json(deletedMessage);
-  } catch (error) {
-    next(error);
-  }
-});
+router.delete("/:id", deleteBankAccount);
 
 /**
  * @swagger
@@ -257,6 +209,8 @@ router.delete("/:id", async (req, res, next) => {
  *   put:
  *     summary: Deposit amount to a bank account
  *     tags: [Bank Accounts]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -315,19 +269,7 @@ router.delete("/:id", async (req, res, next) => {
  *               example:
  *                 error: "Internal Server Error"
  */
-router.put("/:id/deposit", validateInputAmount, async (req, res, next) => {
-  try {
-    const accountId = req.params.id;
-    const amount = req.body.amount;
-    const updatedAccount = await bankAccountService.depositToBankAccount(
-      accountId,
-      amount
-    );
-    res.status(200).json(updatedAccount);
-  } catch (error) {
-    next(error);
-  }
-});
+router.put("/:id/deposit", validateInputAmount, depositToBankAccount);
 
 /**
  * @swagger
@@ -335,6 +277,8 @@ router.put("/:id/deposit", validateInputAmount, async (req, res, next) => {
  *   put:
  *     summary: Withdraw amount from a bank account
  *     tags: [Bank Accounts]
+ *     security:
+ *      - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -393,27 +337,6 @@ router.put("/:id/deposit", validateInputAmount, async (req, res, next) => {
  *               example:
  *                 error: "Internal Server Error"
  */
-router.put("/:id/withdraw", validateInputAmount, async (req, res, next) => {
-  try {
-    const accountId = req.params.id;
-    const amount = req.body.amount;
-    const updatedAccount = await bankAccountService.withdrawFromBankAccount(
-      accountId,
-      amount
-    );
-    res.status(200).json(updatedAccount);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Error handling middleware
-router.use((err, req, res, next) => {
-  if (err instanceof AppError) {
-    res.status(err.statusCode).json({ error: err.message });
-  } else {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+router.put("/:id/withdraw", validateInputAmount, withdrawFromBankAccount);
 
 export default router;

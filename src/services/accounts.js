@@ -23,7 +23,6 @@ class BankAccountService {
       return newAccount;
     } catch (error) {
       console.error("Error creating bank account:", error);
-      // For 500 errors, just throw the error directly
       throw error;
     }
   }

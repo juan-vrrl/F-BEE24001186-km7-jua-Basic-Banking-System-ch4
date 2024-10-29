@@ -1,26 +1,12 @@
 import express from "express";
-import TransactionService from "../services/transactions.js";
-import Joi from "joi";
-import AppError from "../utils/AppError.js";
+import { validateTransactionInput } from "../middlewares/validator.js";
+import {
+  createTransaction,
+  getAllTransactions,
+  getTransactionById,
+} from "../controllers/transactions.js";
 
 const router = express.Router();
-
-const transactionSchema = Joi.object({
-  amount: Joi.number().required(),
-  sourceId: Joi.number().integer().required(),
-  destinationId: Joi.number().integer().required(),
-});
-
-// Middleware to validate input using Joi
-const validateInput = (req, res, next) => {
-  const { error } = transactionSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
-
-const transactionService = new TransactionService();
 
 /**
  * @swagger
@@ -35,6 +21,8 @@ const transactionService = new TransactionService();
  *   post:
  *     summary: Create a new transaction
  *     tags: [Transactions]
+ *     security:
+ *     - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -92,14 +80,7 @@ const transactionService = new TransactionService();
  *               example:
  *                 error: "Internal Server Error"
  */
-router.post("/", validateInput, async (req, res, next) => {
-  try {
-    const newTransaction = await transactionService.createTransaction(req.body);
-    res.status(201).json(newTransaction);
-  } catch (error) {
-    next(error);
-  }
-});
+router.post("/", validateTransactionInput, createTransaction);
 
 /**
  * @swagger
@@ -107,6 +88,8 @@ router.post("/", validateInput, async (req, res, next) => {
  *   get:
  *     summary: Fetch all transactions
  *     tags: [Transactions]
+ *     security:
+ *      - BearerAuth: []
  *     responses:
  *       200:
  *         description: A list of transactions
@@ -128,14 +111,7 @@ router.post("/", validateInput, async (req, res, next) => {
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/", async (req, res, next) => {
-  try {
-    const transactions = await transactionService.getAllTransactions();
-    res.status(200).json(transactions);
-  } catch (error) {
-    next(error);
-  }
-});
+router.get("/", getAllTransactions);
 
 /**
  * @swagger
@@ -143,6 +119,8 @@ router.get("/", async (req, res, next) => {
  *   get:
  *     summary: Fetch a transaction by ID
  *     tags: [Transactions]
+ *     security:
+ *      - BearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -180,29 +158,6 @@ router.get("/", async (req, res, next) => {
  *               example:
  *                 error: "Internal Server Error"
  */
-router.get("/:id", async (req, res, next) => {
-  try {
-    const transaction = await transactionService.getTransactionById(
-      req.params.id
-    );
-
-    if (!transaction) {
-      return next(new AppError("Transaction not found", 404));
-    }
-
-    res.status(200).json(transaction);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Error handling middleware
-router.use((err, req, res, next) => {
-  if (err instanceof AppError) {
-    res.status(err.statusCode).json({ error: err.message });
-  } else {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+router.get("/:id", getTransactionById);
 
 export default router;

@@ -14,6 +14,14 @@ const options = {
       },
     ],
     components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT', 
+          description: 'Enter your token in here:',
+        },
+      },
       schemas: {
         User: {
           type: 'object',

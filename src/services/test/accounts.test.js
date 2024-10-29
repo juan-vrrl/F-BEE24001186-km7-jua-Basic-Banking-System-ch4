@@ -7,15 +7,14 @@ describe("BankAccountService", () => {
 
   beforeEach(() => {
     bankAccountService = new BankAccountService();
-    jest.spyOn(console, "error").mockImplementation(() => {}); // Mocking console.error
+    jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks(); // Restore original console.error after each test
+    jest.restoreAllMocks();
   });
 
-  // Grouping tests for Create operations
-  describe("Create Operations", () => {
+  describe("createBankAccount", () => {
     test("createBankAccount should create a new bank account", async () => {
       const payload = {
         bankName: "My Bank",
@@ -26,6 +25,8 @@ describe("BankAccountService", () => {
 
       const newAccount = {
         id: 1,
+        createdAt: new Date(),
+        userId: 1,
         ...payload,
       };
 
@@ -33,6 +34,7 @@ describe("BankAccountService", () => {
 
       const result = await bankAccountService.createBankAccount(payload);
 
+      // Assertions
       expect(result).toEqual(newAccount);
       expect(prismaMock.bank_Account.create).toHaveBeenCalledWith({
         data: {
@@ -43,10 +45,31 @@ describe("BankAccountService", () => {
         },
       });
     });
+
+    test("createBankAccount should throw an error if creation fails", async () => {
+      const payload = {
+        bankName: "My Bank",
+        bankAccountNumber: "123456789",
+        balance: 1000,
+        userId: 1,
+      };
+
+      prismaMock.bank_Account.create.mockRejectedValue(new Error());
+
+      // Assertions
+      await expect(
+        bankAccountService.createBankAccount(payload)
+      ).rejects.toThrow(Error);
+
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Error creating bank account:"),
+        expect.any(Error)
+      );
+    });
   });
 
-  // Grouping tests for Deposit operations
-  describe("Deposit Operations", () => {
+  // depositAmount
+  describe("depositAmount", () => {
     test("depositAmount should deposit an amount to the bank account", async () => {
       const payload = { amount: 500, accountId: 1 };
 
@@ -58,6 +81,7 @@ describe("BankAccountService", () => {
 
       const result = await bankAccountService.depositAmount(payload);
 
+      // Assertions
       expect(result).toEqual(updatedAccount);
       expect(prismaMock.bank_Account.findUnique).toHaveBeenCalledWith({
         where: { id: parseInt(payload.accountId) },
@@ -67,10 +91,29 @@ describe("BankAccountService", () => {
         data: { balance: existingAccount.balance + payload.amount },
       });
     });
+
+    test("depositAmount should throw an error if account ID not found", async () => {
+      const payload = { amount: 500, accountId: 1 };
+
+      prismaMock.bank_Account.findUnique.mockResolvedValue(null);
+
+      // Assertions
+      await expect(bankAccountService.depositAmount(payload)).rejects.toThrow(
+        AppError
+      );
+      await expect(bankAccountService.depositAmount(payload)).rejects.toThrow(
+        "Account not found"
+      );
+
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Error depositing amount:"),
+        expect.any(Error)
+      );
+    });
   });
 
-  // Grouping tests for Withdraw operations
-  describe("Withdraw Operations", () => {
+  // withdrawAmount
+  describe("withdrawAmount", () => {
     test("withdrawAmount should withdraw an amount from the bank account", async () => {
       const payload = { amount: 500, accountId: 1 };
 
@@ -82,6 +125,7 @@ describe("BankAccountService", () => {
 
       const result = await bankAccountService.withdrawAmount(payload);
 
+      // Assertions
       expect(result).toEqual(updatedAccount);
       expect(prismaMock.bank_Account.findUnique).toHaveBeenCalledWith({
         where: { id: parseInt(payload.accountId) },
@@ -92,6 +136,25 @@ describe("BankAccountService", () => {
       });
     });
 
+    test("withdrawAmount should throw an error if account ID not found", async () => {
+      const payload = { amount: 500, accountId: 1 };
+
+      prismaMock.bank_Account.findUnique.mockResolvedValue(null);
+
+      // Assertions
+      await expect(bankAccountService.withdrawAmount(payload)).rejects.toThrow(
+        AppError
+      );
+      await expect(bankAccountService.withdrawAmount(payload)).rejects.toThrow(
+        "Account not found"
+      );
+
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Error withdrawing amount:"),
+        expect.any(Error)
+      );
+    });
+
     test("withdrawAmount should throw an error if insufficient balance", async () => {
       const payload = { amount: 2000, accountId: 1 };
 
@@ -99,6 +162,7 @@ describe("BankAccountService", () => {
 
       prismaMock.bank_Account.findUnique.mockResolvedValue(existingAccount);
 
+      // Assertions
       await expect(bankAccountService.withdrawAmount(payload)).rejects.toThrow(
         AppError
       );
@@ -106,44 +170,103 @@ describe("BankAccountService", () => {
         "Insufficient balance"
       );
 
-      // Check console.error for the specific error message and that an Error object was also logged
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Error withdrawing amount:"),
-        expect.any(Error) // This checks for an instance of Error
+        expect.any(Error)
       );
     });
   });
 
-  // Grouping tests for Fetch operations
-  describe("Fetch Operations", () => {
+  // getAllBankAccounts
+  describe("getAllBankAccounts", () => {
     test("getAllBankAccounts should fetch all bank accounts", async () => {
-      const bankAccounts = [{ id: 1, bankName: "My Bank", balance: 1000 }];
+      const bankAccounts = [
+        {
+          id: 1,
+          bankName: "My Bank",
+          bankAccountNumber: "12345",
+          balance: 1000,
+          createdAt: new Date(),
+          userId: 1,
+        },
+        {
+          id: 2,
+          bankName: "Your Bank",
+          bankAccountNumber: "54321",
+          balance: 2000,
+          createdAt: new Date(),
+          userId: 2,
+        },
+      ];
 
       prismaMock.bank_Account.findMany.mockResolvedValue(bankAccounts);
 
       const result = await bankAccountService.getAllBankAccounts();
 
+      // Assertions
       expect(result).toEqual(bankAccounts);
       expect(prismaMock.bank_Account.findMany).toHaveBeenCalled();
     });
 
+    test("getAllBankAccounts should throw an error if fetching fails", async () => {
+      prismaMock.bank_Account.findMany.mockRejectedValue(new Error());
+
+      // Assertions
+      await expect(bankAccountService.getAllBankAccounts()).rejects.toThrow(
+        Error
+      );
+
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Error fetching bank accounts:"),
+        expect.any(Error)
+      );
+    });
+  });
+
+  // getBankAccountById
+  describe("getBankAccountById", () => {
     test("getBankAccountById should fetch a bank account by ID", async () => {
-      const bankAccount = { id: 1, bankName: "My Bank", balance: 1000 };
+      const bankAccount = {
+        id: 1,
+        bankName: "My Bank",
+        bankAccountNumber: "12345",
+        balance: 1000,
+        createdAt: new Date(),
+        userId: 1,
+      };
 
       prismaMock.bank_Account.findUnique.mockResolvedValue(bankAccount);
 
       const result = await bankAccountService.getBankAccountById(1);
 
+      // Assertions
       expect(result).toEqual(bankAccount);
       expect(prismaMock.bank_Account.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
         include: { user: true },
       });
     });
+
+    test("getBankAccountById should throw an error if bank account not found", async () => {
+      prismaMock.bank_Account.findUnique.mockResolvedValue(null);
+
+      // Assertions
+      await expect(bankAccountService.getBankAccountById(1)).rejects.toThrow(
+        AppError
+      );
+      await expect(bankAccountService.getBankAccountById(1)).rejects.toThrow(
+        "Bank account not found"
+      );
+
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Error fetching bank account:"),
+        expect.any(Error)
+      );
+    });
   });
 
-  // Grouping tests for Delete operations
-  describe("Delete Operations", () => {
+  // deleteBankAccount
+  describe("deleteBankAccount", () => {
     test("deleteBankAccount should delete a bank account by ID", async () => {
       const accountId = 1;
 
@@ -154,6 +277,7 @@ describe("BankAccountService", () => {
 
       const result = await bankAccountService.deleteBankAccount(accountId);
 
+      // Assertions
       expect(result).toEqual({
         message: `Bank account with ID ${accountId} deleted successfully`,
       });
@@ -170,6 +294,7 @@ describe("BankAccountService", () => {
 
       prismaMock.bank_Account.findUnique.mockResolvedValue(null);
 
+      // Assertions
       await expect(
         bankAccountService.deleteBankAccount(accountId)
       ).rejects.toThrow(AppError);
@@ -177,10 +302,9 @@ describe("BankAccountService", () => {
         bankAccountService.deleteBankAccount(accountId)
       ).rejects.toThrow("Bank account not found");
 
-      // Check console.error for the specific error message and that an Error object was also logged
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining("Error deleting bank account:"),
-        expect.any(Error) // This checks for an instance of Error
+        expect.any(Error)
       );
     });
   });

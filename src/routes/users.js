@@ -5,6 +5,7 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  getCurrentUser,
 } from "../controllers/users.js";
 import verifyToken from "../middlewares/auth.js";
 
@@ -16,8 +17,8 @@ const router = express.Router();
  *   get:
  *     summary: Get all users
  *     tags: [Users]
- *     security:          
- *       - BearerAuth: [] 
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: A list of users
@@ -40,6 +41,44 @@ const router = express.Router();
  *                 error: "Internal Server Error"
  */
 router.get("/", verifyToken, getAllUsers);
+
+/**
+ * @swagger
+ * /users/me:
+ *   get:
+ *     summary: Get the current user
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A user object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserWithProfile'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
+router.get("/me", verifyToken, getCurrentUser);
 
 /**
  * @swagger

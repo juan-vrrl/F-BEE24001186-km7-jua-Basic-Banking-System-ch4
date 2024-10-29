@@ -20,6 +20,17 @@ export const getUserById = async (req, res, next) => {
   }
 };
 
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+
+    const user = await userService.getUserById(userId);
+    res.status(200).json(user); 
+  } catch (error) {
+    next(error); 
+  }
+};
+
 export const updateUser = async (req, res, next) => {
   try {
     const updatedUser = await userService.updateUser(req.params.id, req.body);

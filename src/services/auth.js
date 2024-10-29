@@ -62,6 +62,9 @@ class AuthService {
 
       return newUser;
     } catch (error) {
+      if (error.code === 'P2002') {
+        throw new AppError(`A user with the email ${payload.email} already exists.`, 409);
+      }
       console.error("Error creating user:", error);
       throw error;
     }

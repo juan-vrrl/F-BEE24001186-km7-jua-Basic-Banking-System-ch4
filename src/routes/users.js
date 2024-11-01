@@ -6,8 +6,11 @@ import {
   updateUser,
   deleteUser,
   getCurrentUser,
+  updateProfilePicture,
 } from "../controllers/users.js";
 import verifyToken from "../middlewares/auth.js";
+import upload from "../middlewares/upload.js";
+import { checkMultipart } from "../middlewares/checkMultipart.js";
 
 const router = express.Router();
 
@@ -79,6 +82,8 @@ router.get("/", verifyToken, getAllUsers);
  *                   example: "Internal Server Error"
  */
 router.get("/me", verifyToken, getCurrentUser);
+
+router.put("/updatePicture", verifyToken, checkMultipart, upload.single("profilePicture"), updateProfilePicture);
 
 /**
  * @swagger

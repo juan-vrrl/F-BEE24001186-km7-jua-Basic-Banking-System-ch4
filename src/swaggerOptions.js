@@ -130,9 +130,54 @@ const options = {
               type: 'string',
               description: 'Address of the user',
             },
+            profilePicture: {
+              type: 'string',
+              description: 'URL of the user\'s profile picture',
+            },
+            profilePictureId: {
+              type: 'string',
+              description: 'Public ID of the user\'s profile picture',
+            },
             userId: {
               type: 'integer',
               description: 'ID of the user associated with this profile',
+            },
+          },
+        },
+        Post: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'integer',
+              description: 'The auto-generated id of the post',
+            },
+            title: {
+              type: 'string',
+              description: 'The title of the post',
+            },
+            description: {
+              type: 'string',
+              description: 'The content of the post',
+            },
+            contentUrl: {
+              type: 'string',
+              description: 'The URL of the post image',
+            },
+            fileId: {
+              type: 'string',
+              description: 'The public ID of the post image',
+            },
+            authorId: {
+              type: 'integer',
+              description: 'The ID of the author who created the post',
+            },
+            createdAt: {
+              type: 'string',
+              description: 'The date and time when the post was created',
+            },
+            updatedAt: {
+              type: 'string',
+              description: 'The date and time when the post was last updated',
             },
           },
         },

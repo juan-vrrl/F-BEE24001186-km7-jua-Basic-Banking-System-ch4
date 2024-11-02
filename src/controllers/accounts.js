@@ -2,6 +2,7 @@ import BankAccountService from "../services/accounts.js";
 
 const bankAccountService = new BankAccountService();
 
+// Create a new bank account
 export const createBankAccount = async (req, res, next) => {
   try {
     const newAccount = await bankAccountService.createBankAccount(req.body);
@@ -11,6 +12,7 @@ export const createBankAccount = async (req, res, next) => {
   }
 };
 
+// Get all bank accounts
 export const getAllBankAccounts = async (req, res, next) => {
   try {
     const bankAccounts = await bankAccountService.getAllBankAccounts();
@@ -20,6 +22,7 @@ export const getAllBankAccounts = async (req, res, next) => {
   }
 };
 
+// Get a bank account by ID
 export const getBankAccountById = async (req, res, next) => {
   try {
     const bankAccount = await bankAccountService.getBankAccountById(req.params.id);
@@ -29,6 +32,7 @@ export const getBankAccountById = async (req, res, next) => {
   }
 };
 
+// Update a bank account by ID
 export const deleteBankAccount = async (req, res, next) => {
   try {
     const deletedMessage = await bankAccountService.deleteBankAccount(req.params.id);
@@ -38,6 +42,7 @@ export const deleteBankAccount = async (req, res, next) => {
   }
 };
 
+// Deposit to a bank account
 export const depositToBankAccount = async (req, res, next) => {
   try {
     const accountId = req.params.id;
@@ -49,6 +54,7 @@ export const depositToBankAccount = async (req, res, next) => {
   }
 };
 
+// Withdraw from a bank account
 export const withdrawFromBankAccount = async (req, res, next) => {
   try {
     const accountId = req.params.id;

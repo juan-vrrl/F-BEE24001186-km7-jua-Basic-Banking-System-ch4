@@ -2,6 +2,7 @@ import AuthService from "../services/auth.js";
 
 const authService = new AuthService();
 
+// Register a new user
 export const registerUser = async (req, res, next) => {
   try {
     const newUser = await authService.createUser(req.body);
@@ -11,6 +12,7 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
+// Login a user
 export const loginUser = async (req, res, next) => {
   try {
     const loginResponse = await authService.loginUser(req.body);

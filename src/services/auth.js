@@ -52,7 +52,6 @@ class AuthService {
               identityType,
               identityNumber,
               address,
-              profilePicture: "",
             },
           },
         },

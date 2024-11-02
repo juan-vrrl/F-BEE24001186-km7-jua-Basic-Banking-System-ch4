@@ -27,6 +27,7 @@ model Post {
   title       String
   description String
   contentUrl  String
+  fileId      String   @unique @map("file_id")
   authorId    Int      @map("author_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -42,7 +43,8 @@ model Profile {
   identityType   String @map("identity_type")
   identityNumber String @map("identity_number")
   address        String
-  profilePicture String @map("profile_picture")
+  profilePicture String? @map("profile_picture")
+  profilePictureId String? @unique @map("profile_picture_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

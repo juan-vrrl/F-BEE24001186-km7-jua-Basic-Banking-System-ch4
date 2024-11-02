@@ -2,6 +2,7 @@ import UserService from "../services/users.js";
 
 const userService = new UserService();
 
+// Register a new user
 export const getAllUsers = async (req, res, next) => {
   try {
     const users = await userService.getAllUsers();
@@ -11,6 +12,7 @@ export const getAllUsers = async (req, res, next) => {
   }
 };
 
+// Register a new user
 export const getUserById = async (req, res, next) => {
   try {
     const user = await userService.getUserById(req.params.id);
@@ -20,6 +22,7 @@ export const getUserById = async (req, res, next) => {
   }
 };
 
+// Register a new user
 export const getCurrentUser = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -31,6 +34,7 @@ export const getCurrentUser = async (req, res, next) => {
   }
 };
 
+// Register a new user
 export const updateUser = async (req, res, next) => {
   try {
     const updatedUser = await userService.updateUser(req.params.id, req.body);
@@ -40,6 +44,7 @@ export const updateUser = async (req, res, next) => {
   }
 };
 
+// Register a new user
 export const deleteUser = async (req, res, next) => {
   try {
     const deletedUser = await userService.deleteUser(req.params.id);

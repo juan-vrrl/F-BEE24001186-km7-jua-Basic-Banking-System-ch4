@@ -1,92 +1,30 @@
 import express from "express";
-import { validateUpdateInput } from "../middlewares/validator.js";
 import {
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
-  getCurrentUser,
-  updateProfilePicture,
-} from "../controllers/users.js";
+  createPost,
+  getAllPosts,
+  getPostById,
+  updatePost,
+  deletePost,
+} from "../controllers/posts.js";
 import verifyToken from "../middlewares/auth.js";
+import { validatePostInput } from "../middlewares/validator.js";
 import { upload, checkMultipart } from "../middlewares/upload.js";
 
 const router = express.Router();
 
 /**
  * @swagger
- * /users:
- *   get:
- *     summary: Get all users
- *     tags: [Users]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: A list of users
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Internal Server Error"
+ * tags:
+ *   name: Posts
+ *   description: API for managing posts
  */
-router.get("/", verifyToken, getAllUsers);
 
 /**
  * @swagger
- * /users/me:
- *   get:
- *     summary: Get the current user
- *     tags: [Users]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: A user object
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/UserWithProfile'
- *       404:
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "User not found"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Internal Server Error"
- */
-router.get("/me", verifyToken, getCurrentUser);
-
-/**
- * @swagger
- * /users/updatePicture:
- *   put:
- *     summary: Update the profile picture of the current user
- *     tags: [Users]
+ * /posts:
+ *   post:
+ *     summary: Create a new post
+ *     tags: [Posts]
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -96,16 +34,25 @@ router.get("/me", verifyToken, getCurrentUser);
  *           schema:
  *             type: object
  *             properties:
+ *               userId:
+ *                 type: integer
+ *                 example: 1
+ *               title:
+ *                 type: string
+ *                 example: "My First Post"
+ *               description:
+ *                 type: string
+ *                 example: "This is the description of my first post."
  *               image:
  *                 type: string
  *                 format: binary
  *     responses:
- *       200:
- *         description: Profile picture updated successfully
+ *       201:
+ *         description: Post created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/UserWithProfile'
+ *               $ref: '#/components/schemas/Post'
  *       400:
  *         description: Bad request
  *         content:
@@ -127,46 +74,32 @@ router.get("/me", verifyToken, getCurrentUser);
  *                   type: string
  *                   example: "Internal Server Error"
  */
-router.put(
-  "/updatePicture",
+router.post(
+  "/",
   verifyToken,
   checkMultipart,
+  validatePostInput,
   upload.single("image"),
-  updateProfilePicture
+  createPost
 );
 
 /**
  * @swagger
- * /users/{id}:
+ * /posts:
  *   get:
- *     summary: Get a user by ID
- *     tags: [Users]
+ *     summary: Retrieve all posts
+ *     tags: [Posts]
  *     security:
  *       - BearerAuth: []
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         description: The ID of the user to retrieve
- *         schema:
- *           type: integer
  *     responses:
  *       200:
- *         description: A user object
+ *         description: List of posts
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/UserWithProfile'
- *       404:
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "User not found"
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
  *       500:
  *         description: Internal server error
  *         content:
@@ -178,21 +111,66 @@ router.put(
  *                   type: string
  *                   example: "Internal Server Error"
  */
-router.get("/:id", verifyToken, getUserById);
+router.get("/", verifyToken, getAllPosts);
 
 /**
  * @swagger
- * /users/{id}:
- *   put:
- *     summary: Update a user by ID
- *     tags: [Users]
+ * /posts/{id}:
+ *   get:
+ *     summary: Retrieve a post by ID
+ *     tags: [Posts]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
  *         required: true
- *         description: The ID of the user to update
+ *         description: ID of the post
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Post found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Post not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
+router.get("/:id", verifyToken, getPostById);
+
+/**
+ * @swagger
+ * /posts/{id}:
+ *   put:
+ *     summary: Update a post by ID
+ *     tags: [Posts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID of the post to update
  *         schema:
  *           type: integer
  *     requestBody:
@@ -202,23 +180,19 @@ router.get("/:id", verifyToken, getUserById);
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               title:
  *                 type: string
- *                 example: "Jane Doe"
- *               email:
+ *                 example: "Updated Post Title"
+ *               content:
  *                 type: string
- *                 format: email
- *                 example: "jane.doe@example.com"
- *               address:
- *                 type: string
- *                 example: "456 Another St, Anycity"
+ *                 example: "Updated content for the post."
  *     responses:
  *       200:
- *         description: User updated successfully
+ *         description: Post updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *               $ref: '#/components/schemas/Post'
  *       400:
  *         description: Bad request
  *         content:
@@ -230,7 +204,7 @@ router.get("/:id", verifyToken, getUserById);
  *                   type: string
  *                   example: "Invalid input data"
  *       404:
- *         description: User not found
+ *         description: Post not found
  *         content:
  *           application/json:
  *             schema:
@@ -238,7 +212,7 @@ router.get("/:id", verifyToken, getUserById);
  *               properties:
  *                 error:
  *                   type: string
- *                   example: "User not found"
+ *                   example: "Post not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -250,36 +224,28 @@ router.get("/:id", verifyToken, getUserById);
  *                   type: string
  *                   example: "Internal Server Error"
  */
-router.put("/:id", verifyToken, validateUpdateInput, updateUser);
+router.put("/:id", verifyToken, updatePost);
 
 /**
  * @swagger
- * /users/{id}:
+ * /posts/{id}:
  *   delete:
- *     summary: Delete a user by ID
- *     tags: [Users]
+ *     summary: Delete a post by ID
+ *     tags: [Posts]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
  *         required: true
- *         description: The ID of the user to delete
+ *         description: ID of the post to delete
  *         schema:
  *           type: integer
  *     responses:
  *       200:
- *         description: User deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "User deleted successfully"
+ *         description: Post deleted successfully
  *       404:
- *         description: User not found
+ *         description: Post not found
  *         content:
  *           application/json:
  *             schema:
@@ -287,7 +253,7 @@ router.put("/:id", verifyToken, validateUpdateInput, updateUser);
  *               properties:
  *                 error:
  *                   type: string
- *                   example: "User not found"
+ *                   example: "Post not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -299,6 +265,6 @@ router.put("/:id", verifyToken, validateUpdateInput, updateUser);
  *                   type: string
  *                   example: "Internal Server Error"
  */
-router.delete("/:id", verifyToken, deleteUser);
+router.delete("/:id", verifyToken, deletePost);
 
 export default router;

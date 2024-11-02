@@ -104,10 +104,24 @@ class UserService {
   // Update a user's profile picture
   async updateProfilePicture(userId, file) {
     try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: parseInt(userId) },
+        include: { profile: true },
+      });
+
+      if (!user) {
+        throw new AppError("User not found", 404);
+      }
+
+      const oldFileId = user.profile.profilePictureId;
+      if (oldFileId) {
+        await imagekit.deleteFile(oldFileId);
+      }
+
       const result = await imagekit.upload({
-        file: file.buffer, 
-        fileName: `profile_${userId}`, 
-        folder: "/profile_pictures/", 
+        file: file.buffer,
+        fileName: `profile_${userId}`,
+        folder: "/profile_pictures/",
       });
 
       if (!result) {
@@ -116,9 +130,14 @@ class UserService {
 
       const updatedUser = await this.prisma.user.update({
         where: { id: parseInt(userId) },
-        data: { profile:{
-          update: { profilePicture: result.url },
-        } },
+        data: {
+          profile: {
+            update: {
+              profilePicture: result.url,
+              profilePictureId: result.fileId,
+            },
+          },
+        },
         include: {
           profile: true,
         },

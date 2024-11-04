@@ -1,9 +1,10 @@
+# pisah file
 name: CI
 
 on:
   push:
     branches:
-      - feat/media-handling # or your main branch
+      - main # or your main branch
   pull_request:
     branches:
       - main  # or your main branch

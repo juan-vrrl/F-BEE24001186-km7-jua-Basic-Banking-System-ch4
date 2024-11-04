@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - feat/media-handling # or your main branch
+  pull_request:
+    branches:
+      - main  # or your main branch
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22'  # Specify your Node.js version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npx eslint . --max-warnings=0  # Fail if there are any warnings
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint  # Ensure linting is done before running tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22'  # Specify your Node.js version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test  # Ensure your test command collects coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage/lcov.info  # Path to your coverage file
+          token: ${{ secrets.CODECOV_TOKEN }}  # Codecov token (should be set in repo secrets)

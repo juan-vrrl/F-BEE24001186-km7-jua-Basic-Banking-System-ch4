@@ -54,6 +54,7 @@ export const deleteUser = async (req, res, next) => {
   }
 };
 
+// Update user profile picture
 export const updateProfilePicture = async (req, res, next) => {
   try {
     const userId = req.user.userId;

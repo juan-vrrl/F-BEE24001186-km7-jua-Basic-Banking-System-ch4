@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import AppError from "../utils/AppError.js";
 
+// Verify jwt token
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 
@@ -13,6 +14,7 @@ const verifyToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    console.error(error);
     next(new AppError("Unauthorized: Invalid token", 401));
   }
 };

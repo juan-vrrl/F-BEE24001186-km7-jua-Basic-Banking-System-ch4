@@ -16,6 +16,11 @@ const updateUserSchema = Joi.object({
   address: Joi.string().min(1),
 });
 
+const postSchema = Joi.object({
+  title: Joi.string().min(1).required(),
+  description: Joi.string().min(1).required(),
+});
+
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
@@ -41,6 +46,14 @@ const amountSchema = Joi.object({
 // Middleware functions for validation
 const validateInputAccount = (req, res, next) => {
   const { error } = bankAccountSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+  next();
+};
+
+const validatePostInput = (req, res, next) => {
+  const { error } = postSchema.validate(req.body);
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
@@ -94,4 +107,5 @@ export {
   validateRegistration,
   validateUpdateInput,
   validateLogin,
+  validatePostInput,
 };

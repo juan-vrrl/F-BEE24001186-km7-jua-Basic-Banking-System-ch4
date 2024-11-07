@@ -1,8 +1,7 @@
-// src/services/test/users.test.js
-
 import UserService from "../users";
 import prismaMock from "../../utils/singleton";
 import AppError from "../../utils/AppError";
+import imagekit from "../../utils/imageKit";
 
 describe("UserService", () => {
   let userService;
@@ -10,6 +9,9 @@ describe("UserService", () => {
   beforeEach(() => {
     userService = new UserService();
     jest.spyOn(console, "error").mockImplementation(() => {});
+
+    imagekit.upload = jest.fn();
+    imagekit.deleteFile = jest.fn();
   });
 
   afterEach(() => {
@@ -161,6 +163,146 @@ describe("UserService", () => {
       await expect(userService.deleteUser(1)).rejects.toThrow(AppError);
       expect(console.error).toHaveBeenCalledWith(
         "Error deleting user:",
+        expect.any(Error)
+      );
+    });
+  });
+
+  describe("updateProfilePicture", () => {
+    test("should update user's profile picture and delete the old one", async () => {
+      const userId = 1;
+      const file = { buffer: Buffer.from("file content") };
+
+      // Mock existing user with an old profile picture
+      const user = {
+        id: userId,
+        name: "John Doe",
+        profile: { profilePictureId: "oldFileId", profilePicture: "oldUrl" },
+      };
+      prismaMock.user.findUnique.mockResolvedValue(user);
+
+      // Mock imageKit upload and delete methods
+      const uploadResult = { url: "newUrl", fileId: "newFileId" };
+      imagekit.upload.mockResolvedValue(uploadResult);
+      imagekit.deleteFile.mockResolvedValue(true);
+
+      // Mock updating user profile
+      const updatedUser = {
+        id: userId,
+        name: "John Doe",
+        profile: {
+          profilePictureId: uploadResult.fileId,
+          profilePicture: uploadResult.url,
+        },
+      };
+      prismaMock.user.update.mockResolvedValue(updatedUser);
+
+      const result = await userService.updateProfilePicture(userId, file);
+
+      expect(result).toEqual(updatedUser);
+      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
+        where: { id: userId },
+        include: { profile: true },
+      });
+      expect(imagekit.deleteFile).toHaveBeenCalledWith("oldFileId");
+      expect(imagekit.upload).toHaveBeenCalledWith({
+        file: file.buffer,
+        fileName: `profile_${userId}`,
+        folder: "/profile_pictures/",
+      });
+      expect(prismaMock.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          profile: {
+            update: {
+              profilePicture: uploadResult.url,
+              profilePictureId: uploadResult.fileId,
+            },
+          },
+        },
+        include: { profile: true },
+      });
+    });
+
+    test("should upload a new profile picture when no previous picture exists", async () => {
+      const userId = 1;
+      const file = { buffer: Buffer.from("file content") };
+
+      const user = {
+        id: userId,
+        name: "John Doe",
+        profile: { profilePictureId: null, profilePicture: null },
+      };
+      prismaMock.user.findUnique.mockResolvedValue(user);
+
+      const uploadResult = { url: "newUrl", fileId: "newFileId" };
+      imagekit.upload.mockResolvedValue(uploadResult);
+
+      const updatedUser = {
+        id: userId,
+        name: "John Doe",
+        profile: {
+          profilePictureId: uploadResult.fileId,
+          profilePicture: uploadResult.url,
+        },
+      };
+      prismaMock.user.update.mockResolvedValue(updatedUser);
+
+      const result = await userService.updateProfilePicture(userId, file);
+
+      expect(result).toEqual(updatedUser);
+      expect(imagekit.upload).toHaveBeenCalledWith({
+        file: file.buffer,
+        fileName: `profile_${userId}`,
+        folder: "/profile_pictures/",
+      });
+      expect(imagekit.deleteFile).not.toHaveBeenCalled();
+      expect(prismaMock.user.update).toHaveBeenCalledWith({
+        where: { id: userId },
+        data: {
+          profile: {
+            update: {
+              profilePicture: uploadResult.url,
+              profilePictureId: uploadResult.fileId,
+            },
+          },
+        },
+        include: { profile: true },
+      });
+    });
+
+    test("should throw an error if user not found", async () => {
+      prismaMock.user.findUnique.mockResolvedValue(null);
+      const file = { buffer: Buffer.from("file content") };
+
+      await expect(userService.updateProfilePicture(1, file)).rejects.toThrow(
+        AppError
+      );
+      expect(console.error).toHaveBeenCalledWith(
+        "Error updating profile picture:",
+        expect.any(Error)
+      );
+    });
+
+    test("should handle errors from imageKit upload", async () => {
+      const userId = 1;
+      const file = { buffer: Buffer.from("file content") };
+
+      const user = {
+        id: userId,
+        name: "John Doe",
+        profile: { profilePictureId: "oldFileId", profilePicture: "oldUrl" },
+      };
+      prismaMock.user.findUnique.mockResolvedValue(user);
+
+      imagekit.upload.mockRejectedValue(new Error("Upload error"));
+
+      await expect(
+        userService.updateProfilePicture(userId, file)
+      ).rejects.toThrow(Error);
+      expect(imagekit.deleteFile).toHaveBeenCalledWith("oldFileId");
+      expect(console.error).toHaveBeenCalledWith(
+        "Error updating profile picture:",
         expect.any(Error)
       );
     });

@@ -124,10 +124,6 @@ class UserService {
         folder: "/profile_pictures/",
       });
 
-      if (!result) {
-        throw new AppError("Error uploading profile picture", 500);
-      }
-
       const updatedUser = await this.prisma.user.update({
         where: { id: parseInt(userId) },
         data: {

@@ -15,10 +15,6 @@ class PostService {
         folder: "/post_content/",
       });
 
-      if (!result) {
-        throw new AppError("Error uploading post content", 500);
-      }
-
       const newPost = await this.prisma.post.create({
         data: {
           title,

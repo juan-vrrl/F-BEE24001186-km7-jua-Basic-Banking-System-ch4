@@ -134,6 +134,29 @@ describe("AuthService", () => {
       });
     });
 
+    test("should throw an error if email already exists", async () => {
+      const payload = {
+        name: "John Doe",
+        email: "johndoe@example.com",
+        password: "password123",
+        identityType: "Passport",
+        identityNumber: "A12345678",
+        address: "123 Main St, Springfield, USA",
+      };
+
+      const error = new Error();
+      error.code = 'P2002'; // Unique constraint violation for Prisma
+      prismaMock.user.create.mockRejectedValue(error);
+
+      // Assertions
+      await expect(authService.createUser(payload)).rejects.toThrow(AppError);
+
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining("Error creating user:"),
+        expect.any(Error)
+      );
+    });
+
     test("should throw an error if creating the user fails", async () => {
       const payload = {
         name: "John Doe",

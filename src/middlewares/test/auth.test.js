@@ -14,6 +14,7 @@ describe('verifyToken Middleware', () => {
       json: jest.fn(),
     };
     next = jest.fn();
+    jest.spyOn(console, "error").mockImplementation(() => {}); // Mock console.error
   });
 
   afterEach(() => {
@@ -26,6 +27,7 @@ describe('verifyToken Middleware', () => {
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ error: 'No token provided' });
     expect(next).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled(); // Expect no error to be logged
   });
 
   test('should respond with 401 if token is invalid', () => {
@@ -36,7 +38,12 @@ describe('verifyToken Middleware', () => {
 
     expect(next).toHaveBeenCalledWith(expect.any(AppError));
     expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'Unauthorized: Invalid token', statusCode: 401 }));
-    expect(res.status).not.toHaveBeenCalled(); 
+    expect(res.status).not.toHaveBeenCalled();
+    
+    // Expect console.error to be called with the invalid token error
+    expect(console.error).toHaveBeenCalledWith(
+      expect.any(Error)
+    );
   });
 
   test('should decode token and call next if token is valid', () => {
@@ -50,5 +57,6 @@ describe('verifyToken Middleware', () => {
     expect(next).toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled(); // Expect no error to be logged
   });
 });

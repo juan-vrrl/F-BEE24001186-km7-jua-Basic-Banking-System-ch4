@@ -1,8 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-console.log('ImageKit Public Key:', process.env.IMAGEKIT_PUBLIC_KEY);
-
 import ImageKit from 'imagekit';
 
 // Initialize ImageKit with environment variables

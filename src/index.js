@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 
-// Set the port (use 3000 as a fallback if not set in environment)
+// Set the port 
 const PORT = process.env.PORT || 3000;
 
 // View Engine

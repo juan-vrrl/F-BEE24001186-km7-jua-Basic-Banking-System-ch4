@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer } from "http";
-import dotenv from "dotenv";               
+import dotenv from "dotenv";
 import Routes from "./routes/index.js";
 import Middleware from "./middlewares/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 
-// Set the port 
+// Set the port
 const PORT = process.env.PORT || 3000;
 
 // View Engine
@@ -26,16 +26,19 @@ Middleware(app);
 // Configure routes
 Routes(app);
 
-// Error handling 
-app.use(errorHandler);
-
 // View Engine Home Route
 app.get("/", (req, res) => {
   res.render("index", { title: "Home Page" });
 });
 
+// Error handling
+app.use(errorHandler);
+
+// Set the host based on the environment 
+const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'; 
+
 // Start the server
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Swagger docs available at http://localhost:${PORT}/api/v1/api-docs`);
+  console.log(`Server is running on http://${HOST}:${PORT}`);
+  console.log(`Swagger docs available at http://${HOST}:${PORT}/api/v1/api-docs`);
 });

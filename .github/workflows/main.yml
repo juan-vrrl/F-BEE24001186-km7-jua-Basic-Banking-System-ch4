@@ -1,4 +1,4 @@
-name: CI/CD 
+name: CI/CD
 
 on:
   push:
@@ -10,12 +10,17 @@ on:
 
 jobs:
   lint:
-    uses: ./.github/workflows/lint.yml
+    uses: .github/workflows/lint.yml
 
   test:
     needs: lint
-    uses: ./.github/workflows/test.yml
+    uses: .github/workflows/test.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   deploy:
     needs: test
-    uses: ./.github/workflows/deploy.yml
+    uses: .github/workflows/deploy.yml
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      EC2_PUBLIC_IP: ${{ secrets.EC2_PUBLIC_IP }}

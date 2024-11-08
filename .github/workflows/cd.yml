@@ -20,7 +20,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 3: Install dependencies, deploy on EC2, and restart the app
+      # Step 3:  deploy on EC2, Install dependencies, and restart the app
       - name: Install Node.js dependencies
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} "source ~/.nvm/nvm.sh && cd F-BEE24001186-km7-jua-Basic-Banking-System-ch4 && npm install && pm2 restart my-app"
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} "source ~/.nvm/nvm.sh && cd F-BEE24001186-km7-jua-Basic-Banking-System-ch4 && git pull origin main && npm install && npx prisma generate && pm2 restart my-app"

@@ -28,7 +28,10 @@ Routes(app);
 
 // View Engine Home Route
 app.get("/", (req, res) => {
-  res.render("index", { title: "Home Page", docs_url: `http://${process.env.APP_URL}/api/v1/api-docs` });
+  res.render("index", {
+    title: "Home Page",
+    docs_url: `http://${process.env.APP_URL}/api/v1/api-docs`,
+  });
 });
 
 // Error handling

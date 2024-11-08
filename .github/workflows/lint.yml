@@ -1,12 +1,7 @@
-name: CI - Linting
+name: Lint
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_call:
 
 jobs:
   lint:
@@ -24,4 +19,4 @@ jobs:
         run: npm install
 
       - name: Run ESLint
-        run: npx eslint . --max-warnings=0 
+        run: npx eslint . --max-warnings=0

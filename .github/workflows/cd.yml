@@ -1,26 +1,20 @@
-name: Continuous Deployment
+name: Deploy
 
 on:
-  workflow_run:
-    workflows: ["CI - Testing"]
-    types:
-      - completed
+  workflow_call:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Set up SSH
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 3:  deploy on EC2, Install dependencies, and restart the app
       - name: Install Node.js dependencies
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} "source ~/.nvm/nvm.sh && cd F-BEE24001186-km7-jua-Basic-Banking-System-ch4 && git pull origin main && npm install && npx prisma generate && pm2 restart my-app"

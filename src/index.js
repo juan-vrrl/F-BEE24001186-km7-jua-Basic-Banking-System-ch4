@@ -14,7 +14,7 @@ const app = express();
 const server = createServer(app);
 
 // Set the port
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 // View Engine
 app.set("views", path.join(path.resolve(), "/src/views"));

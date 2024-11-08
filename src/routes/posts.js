@@ -183,9 +183,9 @@ router.get("/:id", verifyToken, getPostById);
  *               title:
  *                 type: string
  *                 example: "Updated Post Title"
- *               content:
+ *               description:
  *                 type: string
- *                 example: "Updated content for the post."
+ *                 example: "Updated description for the post."
  *     responses:
  *       200:
  *         description: Post updated successfully
@@ -224,7 +224,7 @@ router.get("/:id", verifyToken, getPostById);
  *                   type: string
  *                   example: "Internal Server Error"
  */
-router.put("/:id", verifyToken, updatePost);
+router.put("/:id", verifyToken, validatePostInput, updatePost);
 
 /**
  * @swagger

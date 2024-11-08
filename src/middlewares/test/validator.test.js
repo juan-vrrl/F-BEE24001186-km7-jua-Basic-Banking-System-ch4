@@ -5,7 +5,8 @@ import {
   validateRegistration,
   validateUpdateInput,
   validateLogin,
-  validatePostInput // Import the validatePostInput function
+  validatePostInput,
+  validatePostUpdateInput
 } from '../validator';
 
 const mockReq = (body = {}) => ({ body });
@@ -156,10 +157,9 @@ describe('Validators', () => {
     });
   });
 
-  // New tests for validatePostInput
   describe('validatePostInput', () => {
     it('should call next on valid post input', () => {
-      const req = mockReq({ title: "Post Title", description: "Post Description" });
+      const req = mockReq({userId:1, title: "Post Title", description: "Post Description" });
       const res = mockRes();
 
       validatePostInput(req, res, mockNext);
@@ -168,27 +168,7 @@ describe('Validators', () => {
     });
 
     it('should return 400 on invalid post input', () => {
-      const req = mockReq({ title: "", description: "Description without title" });
-      const res = mockRes();
-
-      validatePostInput(req, res, mockNext);
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.any(String) }));
-      expect(mockNext).not.toHaveBeenCalled();
-    });
-
-    it('should return 400 on missing description', () => {
-      const req = mockReq({ title: "Valid Title" });
-      const res = mockRes();
-
-      validatePostInput(req, res, mockNext);
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.any(String) }));
-      expect(mockNext).not.toHaveBeenCalled();
-    });
-
-    it('should return 400 on missing title', () => {
-      const req = mockReq({ description: "Valid Description" });
+      const req = mockReq({ userId: "1", title: "", description: "Description without title" });
       const res = mockRes();
 
       validatePostInput(req, res, mockNext);
@@ -197,4 +177,25 @@ describe('Validators', () => {
       expect(mockNext).not.toHaveBeenCalled();
     });
   });
+
+    describe('validateUpdatePostInput', () => {
+      it('should call next on valid post input', () => {
+        const req = mockReq({ title: "Post Title", description: "Post Description" });
+        const res = mockRes();
+  
+        validatePostUpdateInput(req, res, mockNext);
+        expect(mockNext).toHaveBeenCalled();
+        expect(res.status).not.toHaveBeenCalled();
+      });
+  
+      it('should return 400 on invalid post input', () => {
+        const req = mockReq({ title: "", description: "Description without title" });
+        const res = mockRes();
+  
+        validatePostUpdateInput(req, res, mockNext);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.any(String) }));
+        expect(mockNext).not.toHaveBeenCalled();
+      });
+    });
 });

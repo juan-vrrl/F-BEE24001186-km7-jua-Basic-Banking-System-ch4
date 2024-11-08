@@ -17,8 +17,14 @@ const updateUserSchema = Joi.object({
 });
 
 const postSchema = Joi.object({
+  userId: Joi.number().integer().required(),
   title: Joi.string().min(1).required(),
   description: Joi.string().min(1).required(),
+});
+
+const postUpdateSchema = Joi.object({
+  title: Joi.string().min(1),
+  description: Joi.string().min(1),
 });
 
 const loginSchema = Joi.object({
@@ -54,6 +60,14 @@ const validateInputAccount = (req, res, next) => {
 
 const validatePostInput = (req, res, next) => {
   const { error } = postSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+  next();
+};
+
+const validatePostUpdateInput = (req, res, next) => {
+  const { error } = postUpdateSchema.validate(req.body);
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
@@ -108,4 +122,5 @@ export {
   validateUpdateInput,
   validateLogin,
   validatePostInput,
+  validatePostUpdateInput,
 };

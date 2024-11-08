@@ -7,7 +7,7 @@ import {
   deletePost,
 } from "../controllers/posts.js";
 import verifyToken from "../middlewares/auth.js";
-import { validatePostInput } from "../middlewares/validator.js";
+import { validatePostInput, validatePostUpdateInput } from "../middlewares/validator.js";
 import { upload, checkMultipart } from "../middlewares/upload.js";
 
 const router = express.Router();
@@ -224,7 +224,7 @@ router.get("/:id", verifyToken, getPostById);
  *                   type: string
  *                   example: "Internal Server Error"
  */
-router.put("/:id", verifyToken, validatePostInput, updatePost);
+router.put("/:id", verifyToken, validatePostUpdateInput, updatePost);
 
 /**
  * @swagger

@@ -78,8 +78,8 @@ router.post(
   "/",
   verifyToken,
   checkMultipart,
-  validatePostInput,
   upload.single("image"),
+  validatePostInput,
   createPost
 );
 

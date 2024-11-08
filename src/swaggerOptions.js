@@ -1,4 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const options = {
   definition: {
@@ -10,7 +13,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000/api/v1',
+        url: `${process.env.MAIN_URL}/api/v1`,
       },
     ],
     components: {

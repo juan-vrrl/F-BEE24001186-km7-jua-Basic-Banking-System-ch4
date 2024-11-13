@@ -1,4 +1,6 @@
+import "./instrument.mjs";
 import express from "express";
+import * as Sentry from "@sentry/node";
 import path from "path";
 import { createServer } from "http";
 import dotenv from "dotenv";
@@ -33,6 +35,9 @@ app.get("/", (req, res) => {
     docs_url: `http://${process.env.APP_URL}/api/v1/api-docs`,
   });
 });
+
+// Sentry error handler
+Sentry.setupExpressErrorHandler(app);
 
 // Error handling
 app.use(errorHandler);

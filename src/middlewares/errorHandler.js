@@ -4,9 +4,16 @@ import AppError from "../utils/AppError.js";
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => { 
   if (err instanceof AppError) {
-    return res.status(err.statusCode).json({ error: err.message });
+    // Handle custom application errors
+    return res.status(err.statusCode).json({
+      error: err.message,
+    });
   } else {
-    return res.status(500).json({ error: "Internal Server Error" });
+    // Handle general errors
+    return res.status(500).json({
+      error: "Internal Server Error",
+      sentry_id: res.sentry || null, 
+    });
   }
 };
 

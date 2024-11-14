@@ -28,12 +28,21 @@ Middleware(app);
 // Configure routes
 Routes(app);
 
-// View Engine Home Route
+// View Engine 
 app.get("/", (req, res) => {
   res.render("index", {
     title: "Home Page",
     docs_url: `http://${process.env.APP_URL}/api/v1/api-docs`,
   });
+});
+
+app.get("/reset-password", (req, res) => {
+  const token = req.query.token;
+  if (!token) {
+    return res.status(400).send("Invalid or missing token.");
+  }
+  
+  res.render("resetPassword", { token });
 });
 
 // Sentry error handler

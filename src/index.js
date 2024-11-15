@@ -8,7 +8,6 @@ import Routes from "./routes/index.js";
 import Middleware from "./middlewares/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
-// Load environment variables from .env file
 dotenv.config();
 
 // Initialize express app
@@ -22,7 +21,7 @@ const PORT = process.env.PORT;
 app.set("views", path.join(path.resolve(), "/src/views"));
 app.set("view engine", "ejs");
 
-// Configure middleware
+// Configure middlewares
 Middleware(app);
 
 // Configure routes
@@ -41,7 +40,6 @@ app.get("/reset-password", (req, res) => {
   if (!token) {
     return res.status(400).send("Invalid or missing token.");
   }
-  
   res.render("resetPassword", { token });
 });
 
@@ -51,7 +49,7 @@ Sentry.setupExpressErrorHandler(app);
 // Error handling
 app.use(errorHandler);
 
-// Start the server
+// Start server
 server.listen(PORT, () => {
   console.log(`Server is running on http://${process.env.APP_URL}`);
   console.log(

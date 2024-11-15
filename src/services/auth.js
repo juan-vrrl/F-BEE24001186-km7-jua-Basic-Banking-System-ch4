@@ -3,6 +3,8 @@ import AppError from "../utils/AppError.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import ejs from "ejs";
+import path from "path";
 
 class AuthService {
   constructor() {
@@ -85,7 +87,7 @@ class AuthService {
   async forgotPassword(email) {
     try {
       const user = await this.prisma.user.findUnique({ where: { email } });
-  
+
       if (!user) {
         throw new AppError("No user found with this email", 404);
       }
@@ -93,17 +95,22 @@ class AuthService {
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
         expiresIn: "5m",
       });
-  
+
       const resetLink = `http://${process.env.APP_URL}/reset-password?token=${token}`;
-  
+
+      const emailTemplatePath = path.resolve("src/views/mail.ejs");
+
+      const htmlContent = await ejs.renderFile(emailTemplatePath, {
+        resetLink,
+      });
+
       await this.transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Password Reset",
-        html: `<p>You requested a password reset. Click the link below to reset your password:</p>
-               <a href="${resetLink}">${resetLink}</a>`,
+        html: htmlContent,
       });
-  
+
       return { message: "Password reset link sent to your email" };
     } catch (error) {
       console.error("Error during password reset process:", error);

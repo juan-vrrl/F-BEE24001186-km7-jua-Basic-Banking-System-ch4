@@ -7,7 +7,7 @@ Sentry.init({
     nodeProfilingIntegration(),
   ],
   // Tracing
-  tracesSampleRate: 1.0, //  Capture 100% of the transactions
+  tracesSampleRate: 1.0, 
 });
 // Manually call startProfiler and stopProfiler
 // to profile the code in between

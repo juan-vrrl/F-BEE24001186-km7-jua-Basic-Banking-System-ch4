@@ -139,8 +139,7 @@ class AuthService {
           "Token expired. Please request a new password reset link.",
           400
         );
-      }
-      if (error.name === "JsonWebTokenError") {
+      } else if (error.name === "JsonWebTokenError") {
         throw new AppError("Invalid token.", 400);
       }
       throw error;

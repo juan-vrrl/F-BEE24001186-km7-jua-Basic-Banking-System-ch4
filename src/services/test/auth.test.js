@@ -9,9 +9,11 @@ jest.mock("nodemailer");
 
 describe("AuthService", () => {
   let authService;
+  let io;
 
   beforeEach(() => {
     authService = new AuthService();
+    io = { emit: jest.fn() };
     jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -115,7 +117,7 @@ describe("AuthService", () => {
       jest.spyOn(bcrypt, "hash").mockResolvedValue(hashedPassword);
       prismaMock.user.create.mockResolvedValue(newUser);
 
-      const result = await authService.createUser(payload);
+      const result = await authService.createUser(payload, io);
 
       // Assertions
       expect(result).toEqual(newUser);
@@ -134,6 +136,9 @@ describe("AuthService", () => {
           },
         },
         include: { profile: true },
+      });
+      expect(io.emit).toHaveBeenCalledWith("notification", {
+        message: `Welcome ${newUser.name}! Your account has been created successfully.`,
       });
     });
 
@@ -186,20 +191,20 @@ describe("AuthService", () => {
       const email = "test@example.com";
       const user = { id: 1, email };
       const token = "testToken";
-  
+
       prismaMock.user.findUnique.mockResolvedValue(user);
 
       const sendMailMock = jest.fn().mockResolvedValue(true);
       nodemailer.createTransport = jest.fn().mockReturnValue({
         sendMail: sendMailMock,
       });
-  
+
       jest.spyOn(jwt, "sign").mockReturnValue(token);
-  
+
       const authService = new AuthService();
-  
+
       const result = await authService.forgotPassword(email);
-  
+
       // Assertions
       expect(result).toEqual({
         message: "Password reset link sent to your email",
@@ -207,8 +212,8 @@ describe("AuthService", () => {
       expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
         where: { email },
       });
-      expect(nodemailer.createTransport).toHaveBeenCalled(); 
-      expect(sendMailMock).toHaveBeenCalledWith(  
+      expect(nodemailer.createTransport).toHaveBeenCalled();
+      expect(sendMailMock).toHaveBeenCalledWith(
         expect.objectContaining({
           from: process.env.EMAIL_USER,
           to: email,
@@ -266,7 +271,7 @@ describe("AuthService", () => {
       jest.spyOn(bcrypt, "hash").mockResolvedValue(hashedPassword);
       prismaMock.user.update.mockResolvedValue(true);
 
-      const result = await authService.resetPassword(token, newPassword);
+      const result = await authService.resetPassword(token, newPassword, io);
 
       // Assertions
       expect(result).toEqual({ message: "Password successfully reset" });
@@ -275,6 +280,9 @@ describe("AuthService", () => {
       expect(prismaMock.user.update).toHaveBeenCalledWith({
         where: { id: decoded.userId },
         data: { password: hashedPassword },
+      });
+      expect(io.emit).toHaveBeenCalledWith("notification", {
+        message: `User with ID ${decoded.userId} has successfully reset their password.`,
       });
     });
 

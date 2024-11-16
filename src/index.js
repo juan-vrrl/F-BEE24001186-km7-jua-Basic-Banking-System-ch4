@@ -8,12 +8,16 @@ import Routes from "./routes/index.js";
 import Middleware from "./middlewares/index.js";
 import Views from "./views/index.js";
 import errorHandler from "./middlewares/errorHandler.js";
+import { initializeSocket } from "./utils/socket.js";
 
 dotenv.config();
 
 // Initialize express app
 const app = express();
 const server = createServer(app);
+
+// Initialize Socket.IO
+initializeSocket(server, app);
 
 // Set the port
 const PORT = process.env.PORT;

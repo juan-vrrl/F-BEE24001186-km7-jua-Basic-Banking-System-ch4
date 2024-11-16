@@ -5,7 +5,7 @@ const authService = new AuthService();
 // Register a new user
 export const registerUser = async (req, res, next) => {
   try {
-    const newUser = await authService.createUser(req.body);
+    const newUser = await authService.createUser(req.body, req.io);
     res.status(201).json(newUser);
   } catch (error) {
     next(error);
@@ -38,7 +38,11 @@ export const resetPassword = async (req, res, next) => {
   try {
     const { token } = req.query;
     const { newPassword } = req.body;
-    const response = await authService.resetPassword(token, newPassword);
+    const response = await authService.resetPassword(
+      token,
+      newPassword,
+      req.io
+    );
     res.status(200).json(response);
   } catch (error) {
     next(error);

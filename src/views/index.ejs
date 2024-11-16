@@ -1,26 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= title %></title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background-color: #f9f9f9;
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 20px;
+        background-color: #f9f9f9;
+      }
+
+      h1,
+      h2 {
+        color: #333;
+      }
+
+      .notification-container {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        width: 300px;
+      }
+
+      .notification {
+        background-color: #007bff;
+        color: #fff;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.5s, fadeOut 0.5s 4.5s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
         }
-        h1, h2 {
-            color: #333;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
+      }
+
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+      }
     </style>
-</head>
-<body>
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
     <h1>Welcome to Basic Banking System</h1>
     <h2>Juan Verrel Tanuwijaya - BEJS 1</h2>
 
     <h2>API Documentation</h2>
-    <p>For detailed API documentation, please visit the <a href="<%= docs_url %>">Swagger Docs</a>.</p>
-</body>
+    <p>
+      For detailed API documentation, please visit the
+      <a href="<%= docs_url %>">Swagger Docs</a>.
+    </p>
+
+    <h2>Any Notification would be sended to this page.</h2>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notification-container"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      // Notification container element
+      const notificationContainer = document.getElementById(
+        "notification-container"
+      );
+
+      // Function to display a notification
+      function showNotification(message) {
+        const notification = document.createElement("div");
+        notification.className = "notification";
+        notification.textContent = message;
+
+        notificationContainer.appendChild(notification);
+
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+          notificationContainer.removeChild(notification);
+        }, 5000);
+      }
+
+      // Listen for 'notification' events from the server
+      socket.on("notification", (data) => {
+        showNotification(data.message);
+      });
+    </script>
+  </body>
 </html>

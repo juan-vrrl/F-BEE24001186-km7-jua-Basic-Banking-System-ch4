@@ -45,7 +45,7 @@ class AuthService {
   }
 
   // Create a new user
-  async createUser(payload) {
+  async createUser(payload, io) {
     try {
       const { name, email, password, identityType, identityNumber, address } =
         payload;
@@ -68,6 +68,10 @@ class AuthService {
         include: {
           profile: true,
         },
+      });
+
+      io.emit("notification", {
+        message: `Welcome ${newUser.name}! Your account has been created successfully.`,
       });
 
       return newUser;
@@ -119,7 +123,7 @@ class AuthService {
   }
 
   // Reset Password
-  async resetPassword(token, newPassword) {
+  async resetPassword(token, newPassword, io) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const userId = decoded.userId;
@@ -129,6 +133,10 @@ class AuthService {
       await this.prisma.user.update({
         where: { id: userId },
         data: { password: hashedPassword },
+      });
+
+      io.emit("notification", {
+        message: `User with ID ${userId} has successfully reset their password.`,
       });
 
       return { message: "Password successfully reset" };

@@ -5,7 +5,7 @@ import pluginJest from "eslint-plugin-jest";
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
   {
-    files: ["**/*.js"], // Specify the file types this config applies to
+    files: ["**/*.js"], 
     languageOptions: {
       globals: {
         ...globals.node,  // Node.js globals
@@ -13,11 +13,10 @@ export default [
       },
     },
     plugins: {
-      js: pluginJs,      // Register ESLint's built-in JavaScript rules
-      jest: pluginJest,  // Register Jest plugin as an object
+      js: pluginJs,      
+      jest: pluginJest,
     },
     rules: {
-      // Enable recommended rules for both plugins
       ...pluginJs.configs.recommended.rules,
       ...pluginJest.configs.recommended.rules,
     },

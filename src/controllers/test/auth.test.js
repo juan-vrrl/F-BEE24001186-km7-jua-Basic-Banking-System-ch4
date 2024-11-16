@@ -1,4 +1,9 @@
-import { registerUser, loginUser } from "../auth.js";
+import {
+  registerUser,
+  loginUser,
+  forgotPassword,
+  resetPassword,
+} from "../auth.js";
 import AuthService from "../../services/auth.js";
 
 // Mock the AuthService
@@ -9,6 +14,7 @@ describe("Auth Controller", () => {
 
   beforeEach(() => {
     req = {
+      query: {},
       body: {},
     };
     res = {
@@ -32,6 +38,7 @@ describe("Auth Controller", () => {
         identityNumber: "A12345678",
         address: "123 Main St, Springfield, USA",
       };
+      req.io = { emit: jest.fn() };
 
       const newUser = {
         id: 1,
@@ -54,6 +61,10 @@ describe("Auth Controller", () => {
       // Assertions
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(newUser);
+      expect(AuthService.prototype.createUser).toHaveBeenCalledWith(
+        req.body,
+        req.io
+      );
     });
 
     test("should handle error when registering a user", async () => {
@@ -95,6 +106,128 @@ describe("Auth Controller", () => {
       );
 
       await loginUser(req, res, next);
+
+      // Assertions
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+      expect(next).toHaveBeenCalledWith(
+        expect.objectContaining({ message: errorMessage })
+      );
+    });
+  });
+
+  describe("forgotPassword", () => {
+    test("should send a password reset email if the user exists", async () => {
+      const email = "test@example.com";
+      req.body = { email };
+      const response = { message: "Password reset link sent to your email" };
+
+      AuthService.prototype.forgotPassword.mockResolvedValue(response);
+
+      await forgotPassword(req, res, next);
+
+      // Assertions
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(response);
+      expect(AuthService.prototype.forgotPassword).toHaveBeenCalledWith(email);
+    });
+
+    test("should handle error when email is not associated with any user", async () => {
+      const email = "test@example.com";
+      req.body = { email };
+      const errorMessage = "No user found with this email";
+
+      AuthService.prototype.forgotPassword.mockRejectedValue(
+        new Error(errorMessage)
+      );
+
+      await forgotPassword(req, res, next);
+
+      // Assertions
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+      expect(next).toHaveBeenCalledWith(
+        expect.objectContaining({ message: errorMessage })
+      );
+    });
+
+    test("should handle other errors during password reset process", async () => {
+      const email = "test@example.com";
+      req.body = { email };
+      const errorMessage =
+        "An error occurred during the password reset process";
+
+      AuthService.prototype.forgotPassword.mockRejectedValue(
+        new Error(errorMessage)
+      );
+
+      await forgotPassword(req, res, next);
+
+      // Assertions
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+      expect(next).toHaveBeenCalledWith(
+        expect.objectContaining({ message: errorMessage })
+      );
+    });
+  });
+
+  describe("resetPassword", () => {
+    test("should reset the password successfully", async () => {
+      const token = "testToken";
+      const newPassword = "newPassword123";
+      const io = { emit: jest.fn() };
+      req.query.token = token;
+      req.body.newPassword = newPassword;
+      req.io = io;
+
+      const response = { message: "Password successfully reset" };
+
+      AuthService.prototype.resetPassword.mockResolvedValue(response);
+
+      await resetPassword(req, res, next);
+
+      // Assertions
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(response);
+      expect(AuthService.prototype.resetPassword).toHaveBeenCalledWith(
+        token,
+        newPassword,
+        io,
+      );
+    });
+
+    test("should handle error when the reset token is invalid or expired", async () => {
+      const token = "invalidToken";
+      const newPassword = "newPassword123";
+      req.query.token = token;
+      req.body.newPassword = newPassword;
+      const errorMessage =
+        "Token expired. Please request a new password reset link.";
+
+      AuthService.prototype.resetPassword.mockRejectedValue(
+        new Error(errorMessage)
+      );
+
+      await resetPassword(req, res, next);
+
+      // Assertions
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+      expect(next).toHaveBeenCalledWith(
+        expect.objectContaining({ message: errorMessage })
+      );
+    });
+
+    test("should handle other errors during password reset", async () => {
+      const token = "testToken";
+      const newPassword = "newPassword123";
+      req.query.token = token;
+      req.body.newPassword = newPassword;
+      const errorMessage =
+        "An error occurred during the password reset process";
+
+      AuthService.prototype.resetPassword.mockRejectedValue(
+        new Error(errorMessage)
+      );
+
+      await resetPassword(req, res, next);
 
       // Assertions
       expect(next).toHaveBeenCalledWith(expect.any(Error));

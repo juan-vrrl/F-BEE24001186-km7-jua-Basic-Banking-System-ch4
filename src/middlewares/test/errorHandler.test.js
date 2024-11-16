@@ -26,6 +26,7 @@ describe('errorHandler Middleware', () => {
 
     errorHandler(customError, mockReq, res, mockNext);
 
+    // Assertions
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'Custom error message' });
     expect(mockNext).not.toHaveBeenCalled();
@@ -36,8 +37,28 @@ describe('errorHandler Middleware', () => {
 
     errorHandler(genericError, mockReq, res, mockNext);
 
+    // Assertions
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({ error: 'Internal Server Error' });
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Internal Server Error',
+      sentry_id: null, 
+    });
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  test('should include sentry_id in response when available in generic error', () => {
+    res.sentry = '12345';
+
+    const genericError = new Error('Something went wrong');
+
+    errorHandler(genericError, mockReq, res, mockNext);
+
+    // Assertions
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Internal Server Error',
+      sentry_id: '12345', 
+    });
     expect(mockNext).not.toHaveBeenCalled();
   });
 });

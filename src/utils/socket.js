@@ -1,4 +1,3 @@
-// utils/socket.js
 import { Server } from "socket.io";
 
 let io;
@@ -7,8 +6,7 @@ export const initializeSocket = (server, app) => {
   if (!io) {
     io = new Server(server, {
       cors: {
-        origin: "*", 
-        methods: ["GET", "POST"],
+        origin: "*",
       },
     });
 
@@ -20,7 +18,7 @@ export const initializeSocket = (server, app) => {
     });
   }
 
-  // Middleware to attach io 
+  // Middleware to attach io instance in request object
   app.use((req, res, next) => {
     req.io = io;
     return next();
